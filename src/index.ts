@@ -8,6 +8,7 @@ import express, {
 	type Response,
 } from "express";
 import jobRoutes from "./routes/jobs.js";
+import jobRolesRoutes from "./routes/jobRoles.js";
 
 interface AppConfig {
 	name: string;
@@ -49,6 +50,9 @@ class App {
 
 		// Job routes
 		this.server.use("/api/jobs", jobRoutes);
+		
+		// Job roles routes
+		this.server.use("/api/job-roles", jobRolesRoutes);
 	}
 
 	public start(): void {
@@ -73,7 +77,7 @@ class App {
 
 // Application configuration
 const appConfig: AppConfig = {
-	name: "team2-job-app-frontend",
+	name: "team2-job-app-backend",
 	version: "1.0.0",
 	environment: process.env["NODE_ENV"] ?? "development",
 	port: parseInt(process.env["PORT"] ?? "3000", 10),

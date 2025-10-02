@@ -18,3 +18,20 @@ export interface Job {
 	datePosted?: string;
 	applicationUrl?: string;
 }
+
+/**
+ * JobRole interface for the job roles data
+ */
+export interface JobRole {
+	jobRoleId: number;
+	roleName: string;
+	description: string;
+	responsibilities: string;
+	jobSpecLink: string;
+	location: string;
+	capability: string;
+	band: string;
+	closingDate: string;
+	status: string;
+	numberOfOpenPositions: number;
+}

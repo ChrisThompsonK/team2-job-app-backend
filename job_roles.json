@@ -1,0 +1,43 @@
+{
+  "jobRoles": [
+    {
+      "jobRoleId": 1,
+      "roleName": "User Research Lead (Manager)",
+      "description": "Lead our user research initiatives and drive user-centered design across multiple projects.",
+      "responsibilities": "Lead and manage a team of user researchers\nDevelop and implement user research strategies",
+      "jobSpecLink": "https://example.com/spec1",
+      "location": "Belfast",
+      "capability": "Experience Design",
+      "band": "Manager",
+      "closingDate": "2025-01-31",
+      "status": "Open",
+      "numberOfOpenPositions": 1
+    },
+    {
+      "jobRoleId": 2,
+      "roleName": "Service Designer (Consultant)",
+      "description": "Design end-to-end service experiences that delight users and drive business value.",
+      "responsibilities": "Design comprehensive service experiences\nCreate service blueprints and process flows",
+      "jobSpecLink": "https://example.com/spec2",
+      "location": "London",
+      "capability": "Experience Design",
+      "band": "Consultant",
+      "closingDate": "2025-02-15",
+      "status": "Open",
+      "numberOfOpenPositions": 2
+    },
+    {
+      "jobRoleId": 3,
+      "roleName": "User Researcher (Senior Associate)",
+      "description": "Conduct user research to inform product and service design decisions.",
+      "responsibilities": "Plan and conduct user research studies\nAnalyze research data and synthesize insights",
+      "jobSpecLink": "https://example.com/spec3",
+      "location": "Edinburgh",
+      "capability": "Experience Design",
+      "band": "Senior Associate",
+      "closingDate": "2025-01-20",
+      "status": "Open",
+      "numberOfOpenPositions": 2
+    }
+  ]
+}

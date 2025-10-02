@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAdult } from "./testing";
+import { isAdult } from "./testing.js";
 
 describe("isAdult", () => {
 	it("should return true for ages 18 and above", () => {
