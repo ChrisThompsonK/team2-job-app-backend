@@ -19,8 +19,7 @@ The README.md file MUST be updated after ANY of the following changes:
 5. **New Scripts**: Adding or modifying npm scripts in package.json
 6. **Technology Stack Changes**: Adding, removing, or upgrading major technologies
 7. **Build Process Changes**: Modifications to build, deployment, or development workflows
-8. **New Components or Libraries**: Adding UI libraries (like daisyUI), testing libraries, etc.
-9. **Environment or Setup Changes**: Changes that affect how developers set up or run the project
+8. **Environment or Setup Changes**: Changes that affect how developers set up or run the project
 
 ### Required README Sections to Update
 
