@@ -8,66 +8,82 @@ import express, {
 	type Response,
 } from "express";
 import jobRoutes from "./routes/jobs.js";
-import jobRolesRoutes from "./routes/jobRoles.js";
+import {
+	corsMiddleware,
+	securityMiddleware,
+	requestLoggingMiddleware,
+	errorHandler,
+	notFoundHandler,
+	logger,
+} from "./middleware/index.js";
+import { config } from "./config/index.js";
 
-interface AppConfig {
-	name: string;
-	version: string;
-	environment: string;
-	port: number;
-}
+import type { AppConfig } from "./config/index.js";
 
 class App {
-	private config: AppConfig;
+	private appConfig: AppConfig;
 	private server: Application;
 
-	constructor(config: AppConfig) {
-		this.config = config;
+	constructor(appConfig: AppConfig) {
+		this.appConfig = appConfig;
 		this.server = express();
 		this.setupMiddleware();
 		this.setupRoutes();
+		this.setupErrorHandling();
 	}
 
 	private setupMiddleware(): void {
-		// Add JSON parsing middleware
-		this.server.use(express.json());
+		// Security and CORS middleware
+		this.server.use(securityMiddleware);
+		this.server.use(corsMiddleware);
+		
+		// Logging middleware
+		this.server.use(requestLoggingMiddleware);
 
-		// Add URL-encoded parsing middleware
-		this.server.use(express.urlencoded({ extended: true }));
+		// Body parsing middleware
+		this.server.use(express.json({ limit: '10mb' }));
+		this.server.use(express.urlencoded({ extended: true, limit: '10mb' }));
 	}
 
 	private setupRoutes(): void {
 		// Hello World endpoint
 		this.server.get("/", (_req: Request, res: Response) => {
 			res.json({
-				message: "Hello World!",
-				app: this.config.name,
-				version: this.config.version,
-				environment: this.config.environment,
+				message: "Job App Backend API",
+				app: this.appConfig.name,
+				version: this.appConfig.version,
+				environment: this.appConfig.environment,
 				timestamp: new Date().toISOString(),
+				endpoints: {
+					jobs: "/api/jobs",
+					jobById: "/api/jobs/:id"
+				}
 			});
 		});
 
-		// Job routes
+		// Job routes - only 2 endpoints
 		this.server.use("/api/jobs", jobRoutes);
+	}
+
+	private setupErrorHandling(): void {
+		// 404 handler for unknown routes
+		this.server.use(notFoundHandler);
 		
-		// Job roles routes
-		this.server.use("/api/job-roles", jobRolesRoutes);
+		// Global error handler (must be last)
+		this.server.use(errorHandler);
 	}
 
 	public start(): void {
-		this.server.listen(this.config.port, () => {
-			console.log(`🚀 Starting ${this.config.name} v${this.config.version}`);
-			console.log(`📦 Environment: ${this.config.environment}`);
-			console.log(`🌐 Server running on http://localhost:${this.config.port}`);
-			console.log(
-				"✅ Application is running with TypeScript, ES Modules, and Express!"
-			);
+		this.server.listen(this.appConfig.server.port, () => {
+			logger.info(`🚀 Starting ${this.appConfig.name} v${this.appConfig.version}`);
+			logger.info(`📦 Environment: ${this.appConfig.environment}`);
+			logger.info(`🌐 Server running on http://localhost:${this.appConfig.server.port}`);
+			logger.info("✅ Application is running with TypeScript, ES Modules, and Express!");
 		});
 	}
 
 	public getConfig(): AppConfig {
-		return { ...this.config };
+		return this.appConfig;
 	}
 
 	public getServer(): Application {
@@ -75,16 +91,8 @@ class App {
 	}
 }
 
-// Application configuration
-const appConfig: AppConfig = {
-	name: "team2-job-app-backend",
-	version: "1.0.0",
-	environment: process.env["NODE_ENV"] ?? "development",
-	port: parseInt(process.env["PORT"] ?? "3000", 10),
-};
-
 // Initialize and start the application
-const app = new App(appConfig);
+const app = new App(config);
 app.start();
 
-export { App, type AppConfig };
+export { App };

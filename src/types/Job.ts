@@ -1,5 +1,8 @@
+// This file is deprecated - use types/api.ts instead
+// Keeping for backward compatibility
+
 /**
- * Job interface - update this based on your actual JSON data structure
+ * @deprecated Use Job interface from types/api.ts instead
  */
 export interface Job {
 	id: string | number;
@@ -20,7 +23,7 @@ export interface Job {
 }
 
 /**
- * JobRole interface for the job roles data
+ * @deprecated Job roles functionality has been removed
  */
 export interface JobRole {
 	jobRoleId: number;
