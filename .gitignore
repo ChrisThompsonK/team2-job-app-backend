@@ -72,6 +72,11 @@ web_modules/
 .env.production
 .env.local
 
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
