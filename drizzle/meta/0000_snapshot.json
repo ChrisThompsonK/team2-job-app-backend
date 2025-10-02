@@ -1,11 +1,11 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "95614fa3-1b61-4d69-9dd8-f82cbc68553e",
+  "id": "39e1b10d-5a6f-4e33-b0f6-c51a546273e2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "job_roles": {
-      "name": "job_roles",
+    "jobs": {
+      "name": "jobs",
       "columns": {
         "id": {
           "name": "id",
@@ -14,36 +14,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "job_role_id": {
-          "name": "job_role_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "role_name": {
-          "name": "role_name",
+        "title": {
+          "name": "title",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "responsibilities": {
-          "name": "responsibilities",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "job_spec_link": {
-          "name": "job_spec_link",
+        "company": {
+          "name": "company",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -53,43 +32,76 @@
           "name": "location",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "capability": {
-          "name": "capability",
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "band": {
-          "name": "band",
+        "requirements": {
+          "name": "requirements",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "closing_date": {
-          "name": "closing_date",
+        "type": {
+          "name": "type",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'full-time'"
+        },
+        "remote": {
+          "name": "remote",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "date_posted": {
+          "name": "date_posted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "application_url": {
+          "name": "application_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "status": {
           "name": "status",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'open'"
         },
-        "number_of_open_positions": {
-          "name": "number_of_open_positions",
-          "type": "integer",
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'CURRENT_TIMESTAMP'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'CURRENT_TIMESTAMP'"
         }
       },
       "indexes": {},
