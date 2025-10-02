@@ -1,12 +1,12 @@
 {
-  "jobs": [
-    {
-      "id": "example",
-      "title": "Example Job",
-      "company": "Example Company",
-      "location": "Remote",
-      "description": "This is a placeholder. Replace this file with your actual job data.",
-      "type": "full-time"
-    }
-  ]
+	"jobs": [
+		{
+			"id": "example",
+			"title": "Example Job",
+			"company": "Example Company",
+			"location": "Remote",
+			"description": "This is a placeholder. Replace this file with your actual job data.",
+			"type": "full-time"
+		}
+	]
 }

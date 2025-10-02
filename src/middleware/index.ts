@@ -2,39 +2,39 @@
  * Application middleware setup
  */
 
-import { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import winston from 'winston';
-import { z } from 'zod';
-import { config } from '../config/index.js';
-import type { ApiResponse, ErrorResponse } from '../types/api.js';
+import cors from "cors";
+import type { NextFunction, Request, Response } from "express";
+import helmet from "helmet";
+import morgan from "morgan";
+import winston from "winston";
+import { z } from "zod";
+import { config } from "../config/index.js";
+import type { ApiResponse, ErrorResponse } from "../types/api.js";
 
 // Logger setup
 export const logger = winston.createLogger({
 	level: config.logging.level,
-	format: config.logging.format === 'json' 
-		? winston.format.combine(
-			winston.format.timestamp(),
-			winston.format.errors({ stack: true }),
-			winston.format.json()
-		)
-		: winston.format.combine(
-			winston.format.colorize(),
-			winston.format.timestamp({ format: 'HH:mm:ss' }),
-			winston.format.printf(({ timestamp, level, message, ...meta }) => {
-				return `${timestamp} [${level}]: ${message} ${
-					Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''
-				}`;
-			})
-		),
+	format:
+		config.logging.format === "json"
+			? winston.format.combine(
+					winston.format.timestamp(),
+					winston.format.errors({ stack: true }),
+					winston.format.json()
+				)
+			: winston.format.combine(
+					winston.format.colorize(),
+					winston.format.timestamp({ format: "HH:mm:ss" }),
+					winston.format.printf(({ timestamp, level, message, ...meta }) => {
+						return `${timestamp} [${level}]: ${message} ${
+							Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""
+						}`;
+					})
+				),
 	transports: [
 		new winston.transports.Console(),
-		...(config.logging.file 
-			? [new winston.transports.File({ filename: 'logs/app.log' })]
-			: []
-		),
+		...(config.logging.file
+			? [new winston.transports.File({ filename: "logs/app.log" })]
+			: []),
 	],
 });
 
@@ -42,8 +42,8 @@ export const logger = winston.createLogger({
 export const corsMiddleware = cors({
 	origin: config.server.cors.origin,
 	credentials: config.server.cors.credentials,
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+	allowedHeaders: ["Content-Type", "Authorization", "Accept"],
 });
 
 // Security middleware
@@ -60,9 +60,7 @@ export const securityMiddleware = helmet({
 
 // Request logging middleware
 export const requestLoggingMiddleware = morgan(
-	config.environment === 'production' 
-		? 'combined'
-		: 'dev',
+	config.environment === "production" ? "combined" : "dev",
 	{
 		stream: {
 			write: (message: string) => logger.info(message.trim()),
@@ -95,8 +93,10 @@ export const validateRequest = (schema: {
 			if (error instanceof z.ZodError) {
 				const errorResponse: ErrorResponse = {
 					success: false,
-					message: 'Validation error',
-					error: error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', '),
+					message: "Validation error",
+					error: error.issues
+						.map((e: any) => `${e.path.join(".")}: ${e.message}`)
+						.join(", "),
 					timestamp: new Date().toISOString(),
 					path: req.path,
 					statusCode: 400,
@@ -116,7 +116,7 @@ export const errorHandler = (
 	res: Response,
 	_next: NextFunction
 ): void => {
-	logger.error('Unhandled error:', {
+	logger.error("Unhandled error:", {
 		error: err.message,
 		stack: err.stack,
 		url: req.url,
@@ -127,10 +127,11 @@ export const errorHandler = (
 
 	const errorResponse: ErrorResponse = {
 		success: false,
-		message: config.environment === 'production' 
-			? 'Internal server error' 
-			: err.message || 'An unexpected error occurred',
-		error: config.environment === 'development' ? err.stack : undefined,
+		message:
+			config.environment === "production"
+				? "Internal server error"
+				: err.message || "An unexpected error occurred",
+		error: config.environment === "development" ? err.stack : undefined,
 		timestamp: new Date().toISOString(),
 		path: req.path,
 		statusCode: err.statusCode || 500,

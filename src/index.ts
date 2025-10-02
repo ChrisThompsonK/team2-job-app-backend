@@ -7,18 +7,17 @@ import express, {
 	type Request,
 	type Response,
 } from "express";
-import jobRoutes from "./routes/jobs.js";
+import type { AppConfig } from "./config/index.js";
+import { config } from "./config/index.js";
 import {
 	corsMiddleware,
-	securityMiddleware,
-	requestLoggingMiddleware,
 	errorHandler,
-	notFoundHandler,
 	logger,
+	notFoundHandler,
+	requestLoggingMiddleware,
+	securityMiddleware,
 } from "./middleware/index.js";
-import { config } from "./config/index.js";
-
-import type { AppConfig } from "./config/index.js";
+import jobRoutes from "./routes/jobs.js";
 
 class App {
 	private appConfig: AppConfig;
@@ -36,13 +35,13 @@ class App {
 		// Security and CORS middleware
 		this.server.use(securityMiddleware);
 		this.server.use(corsMiddleware);
-		
+
 		// Logging middleware
 		this.server.use(requestLoggingMiddleware);
 
 		// Body parsing middleware
-		this.server.use(express.json({ limit: '10mb' }));
-		this.server.use(express.urlencoded({ extended: true, limit: '10mb' }));
+		this.server.use(express.json({ limit: "10mb" }));
+		this.server.use(express.urlencoded({ extended: true, limit: "10mb" }));
 	}
 
 	private setupRoutes(): void {
@@ -56,8 +55,8 @@ class App {
 				timestamp: new Date().toISOString(),
 				endpoints: {
 					jobs: "/api/jobs",
-					jobById: "/api/jobs/:id"
-				}
+					jobById: "/api/jobs/:id",
+				},
 			});
 		});
 
@@ -68,17 +67,23 @@ class App {
 	private setupErrorHandling(): void {
 		// 404 handler for unknown routes
 		this.server.use(notFoundHandler);
-		
+
 		// Global error handler (must be last)
 		this.server.use(errorHandler);
 	}
 
 	public start(): void {
 		this.server.listen(this.appConfig.server.port, () => {
-			logger.info(`🚀 Starting ${this.appConfig.name} v${this.appConfig.version}`);
+			logger.info(
+				`🚀 Starting ${this.appConfig.name} v${this.appConfig.version}`
+			);
 			logger.info(`📦 Environment: ${this.appConfig.environment}`);
-			logger.info(`🌐 Server running on http://localhost:${this.appConfig.server.port}`);
-			logger.info("✅ Application is running with TypeScript, ES Modules, and Express!");
+			logger.info(
+				`🌐 Server running on http://localhost:${this.appConfig.server.port}`
+			);
+			logger.info(
+				"✅ Application is running with TypeScript, ES Modules, and Express!"
+			);
 		});
 	}
 
