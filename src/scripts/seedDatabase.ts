@@ -1,39 +1,12 @@
 #!/usr/bin/env tsx
 
 import { db } from "../db/index";
-import { jobApplications, users } from "../db/schema";
+import { jobApplications } from "../db/schema";
 
 async function seedDatabase(): Promise<void> {
 	console.log("🌱 Starting database seeding...");
 
 	try {
-		// Create sample users
-		const sampleUsers = await db
-			.insert(users)
-			.values([
-				{
-					name: "John Doe",
-					email: "john.doe@company.com",
-					role: "admin",
-					createdAt: new Date(),
-				},
-				{
-					name: "Jane Smith",
-					email: "jane.smith@company.com",
-					role: "hr",
-					createdAt: new Date(),
-				},
-				{
-					name: "Bob Johnson",
-					email: "bob.johnson@example.com",
-					role: "user",
-					createdAt: new Date(),
-				},
-			])
-			.returning();
-
-		console.log(`✅ Created ${sampleUsers.length} users`);
-
 		// Create sample job applications
 		const now = new Date();
 		const futureDate = new Date();

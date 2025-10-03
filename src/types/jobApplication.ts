@@ -1,25 +1,9 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import type {
-	applicationSubmissions,
-	jobApplications,
-	users,
-} from "../db/schema";
+import type { jobApplications } from "../db/schema";
 
 // Job Application types
 export type JobApplication = InferSelectModel<typeof jobApplications>;
 export type NewJobApplication = InferInsertModel<typeof jobApplications>;
-
-// User types
-export type User = InferSelectModel<typeof users>;
-export type NewUser = InferInsertModel<typeof users>;
-
-// Application Submission types
-export type ApplicationSubmission = InferSelectModel<
-	typeof applicationSubmissions
->;
-export type NewApplicationSubmission = InferInsertModel<
-	typeof applicationSubmissions
->;
 
 // Request/Response types for API
 export interface CreateJobApplicationRequest {
