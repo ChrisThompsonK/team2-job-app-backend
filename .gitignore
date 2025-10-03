@@ -144,3 +144,15 @@ Icon?
 
 # Backup files
 *.bak
+
+# Database files
+# Ignore all database files to prevent committing local development data
+database.sqlite
+database_backup.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db-shm
+*.db-wal
+
+# Drizzle Studio
+.drizzle
