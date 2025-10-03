@@ -19,7 +19,12 @@
     "format": "biome format src/",
     "format:fix": "biome format --write src/",
     "check": "biome check src/",
-    "check:fix": "biome check --write src/"
+    "check:fix": "biome check --write src/",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/scripts/generate-sample-users.ts"
   },
   "keywords": [
     "typescript",
@@ -30,15 +35,21 @@
   "license": "ISC",
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
+    "@types/bcrypt": "^6.0.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.3",
     "@types/node": "^24.6.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
+    "drizzle-kit": "^0.31.5",
     "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.4.1",
+    "drizzle-orm": "^0.44.6",
     "express": "^5.1.0"
   }
 }

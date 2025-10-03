@@ -72,7 +72,7 @@ const appConfig: AppConfig = {
 	name: "team2-job-app-frontend",
 	version: "1.0.0",
 	environment: process.env["NODE_ENV"] ?? "development",
-	port: parseInt(process.env["PORT"] ?? "3000", 10),
+	port: parseInt(process.env["PORT"] ?? "3001", 10),
 };
 
 // Initialize and start the application
