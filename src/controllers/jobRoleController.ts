@@ -1,7 +1,5 @@
-import { and, count, desc, eq, like } from "drizzle-orm";
 import type { Request, Response } from "express";
-import { db } from "../db/index";
-import { jobRoles } from "../db/schema";
+import { jobRoleRepository } from "../repositories/jobRoleRepository";
 import type {
 	ApiResponse,
 	JobRoleResponse,
@@ -26,40 +24,23 @@ export async function getAllJobRoles(
 			band,
 		} = req.query;
 
-		// Build where conditions
-		const conditions = [];
-		if (status) {
-			conditions.push(eq(jobRoles.status, status));
-		}
-		if (capability) {
-			conditions.push(like(jobRoles.capability, `%${capability}%`));
-		}
-		if (location) {
-			conditions.push(like(jobRoles.location, `%${location}%`));
-		}
-		if (band) {
-			conditions.push(eq(jobRoles.band, band));
-		}
-
-		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
 		// Get total count for pagination
-		const countResult = await db
-			.select({ total: count() })
-			.from(jobRoles)
-			.where(whereClause);
+		const filters = {
+			...(status && { status }),
+			...(capability && { capability }),
+			...(location && { location }),
+			...(band && { band }),
+		};
 
-		const total = countResult[0]?.total ?? 0;
+		const total = await jobRoleRepository.getJobRoleCount(filters);
 
 		// Get paginated results
 		const offset = (page - 1) * limit;
-		const results = await db
-			.select()
-			.from(jobRoles)
-			.where(whereClause)
-			.orderBy(desc(jobRoles.createdAt))
-			.limit(limit)
-			.offset(offset);
+		const results = await jobRoleRepository.getAllJobRoles({
+			...filters,
+			limit,
+			offset,
+		});
 
 		// Convert timestamps to ISO strings
 		const formattedResults: JobRoleResponse[] = results.map((job) => ({
@@ -111,11 +92,7 @@ export async function getJobRoleById(
 			return;
 		}
 
-		const [job] = await db
-			.select()
-			.from(jobRoles)
-			.where(eq(jobRoles.id, jobId))
-			.limit(1);
+		const job = await jobRoleRepository.getJobRoleById(jobId);
 
 		if (!job) {
 			res.status(404).json({
@@ -155,30 +132,23 @@ export async function getActiveJobRoles(
 	try {
 		const { page = 1, limit = 10, capability, location, band } = req.query;
 
-		// Build where conditions for active jobs
-		const conditions = [eq(jobRoles.status, "active")];
+		// Build filters for active jobs
+		const filters = {
+			...(capability && { capability }),
+			...(location && { location }),
+			...(band && { band }),
+		};
 
-		if (capability) {
-			conditions.push(like(jobRoles.capability, `%${capability}%`));
-		}
-		if (location) {
-			conditions.push(like(jobRoles.location, `%${location}%`));
-		}
-		if (band) {
-			conditions.push(eq(jobRoles.band, band));
-		}
-
-		const whereClause = and(...conditions);
+		// Get total count for pagination
+		const total = await jobRoleRepository.getActiveJobRoleCount(filters);
 
 		// Get paginated results
 		const offset = (page - 1) * limit;
-		const results = await db
-			.select()
-			.from(jobRoles)
-			.where(whereClause)
-			.orderBy(desc(jobRoles.createdAt))
-			.limit(limit)
-			.offset(offset);
+		const results = await jobRoleRepository.getActiveJobRoles({
+			...filters,
+			limit,
+			offset,
+		});
 
 		// Filter out jobs that have passed closing date
 		const now = new Date();
@@ -192,7 +162,7 @@ export async function getActiveJobRoles(
 			closingDate: new Date(job.closingDate).toISOString(),
 		}));
 
-		const totalPages = Math.ceil(activeJobs.length / limit);
+		const totalPages = Math.ceil(total / limit);
 
 		res.json({
 			success: true,
@@ -201,7 +171,7 @@ export async function getActiveJobRoles(
 				pagination: {
 					page,
 					limit,
-					total: activeJobs.length,
+					total,
 					totalPages,
 				},
 			},
