@@ -1,12 +1,12 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import type { jobRoles } from "../db/schema";
 
-// Job Application types
+// Job Role types
 export type JobRole = InferSelectModel<typeof jobRoles>;
 export type NewJobRole = InferInsertModel<typeof jobRoles>;
 
 // Request/Response types for API
-export interface CreateJobApplicationRequest {
+export interface CreateJobRoleRequest {
 	jobRoleName: string;
 	description: string;
 	responsibilities: string;
@@ -18,7 +18,7 @@ export interface CreateJobApplicationRequest {
 	numberOfOpenPositions?: number;
 }
 
-export interface UpdateJobApplicationRequest {
+export interface UpdateJobRoleRequest {
 	jobRoleName?: string;
 	description?: string;
 	responsibilities?: string;
@@ -31,7 +31,7 @@ export interface UpdateJobApplicationRequest {
 	numberOfOpenPositions?: number;
 }
 
-export interface JobApplicationResponse
+export interface JobRoleResponse
 	extends Omit<JobRole, "createdAt" | "updatedAt" | "closingDate"> {
 	createdAt: string; // ISO date string
 	updatedAt: string; // ISO date string
@@ -39,7 +39,7 @@ export interface JobApplicationResponse
 }
 
 export interface CreateApplicationSubmissionRequest {
-	jobApplicationId: number;
+	jobRoleId: number;
 	coverLetter?: string;
 	resumeUrl?: string;
 }
@@ -49,7 +49,7 @@ export interface PaginationQuery {
 	limit?: number;
 }
 
-export interface JobApplicationsQuery extends PaginationQuery {
+export interface JobRolesQuery extends PaginationQuery {
 	status?: "active" | "closed" | "draft";
 	capability?: string;
 	location?: string;

@@ -7,7 +7,7 @@ async function seedDatabase(): Promise<void> {
 	console.log("🌱 Starting database seeding...");
 
 	try {
-		// Create sample job applications
+		// Create sample job roles
 		const now = new Date();
 		const futureDate = new Date();
 		futureDate.setMonth(futureDate.getMonth() + 2);
@@ -103,11 +103,11 @@ async function seedDatabase(): Promise<void> {
 			])
 			.returning();
 
-		console.log(`✅ Created ${sampleJobs.length} job applications`);
+		console.log(`✅ Created ${sampleJobs.length} job roles`);
 		console.log("🎉 Database seeding completed successfully!");
 
 		// Display the created jobs
-		console.log("\n📋 Created Job Applications:");
+		console.log("\n📋 Created Job Roles:");
 		for (const job of sampleJobs) {
 			console.log(
 				`- ${job.jobRoleName} (${job.capability}) - ${job.location} [${job.status}]`

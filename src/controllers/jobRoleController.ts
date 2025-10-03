@@ -4,17 +4,17 @@ import { db } from "../db/index";
 import { jobRoles } from "../db/schema";
 import type {
 	ApiResponse,
-	JobApplicationResponse,
-	JobApplicationsQuery,
+	JobRoleResponse,
+	JobRolesQuery,
 	PaginatedResponse,
-} from "../types/jobApplication";
+} from "../types/jobRole";
 
 /**
- * Get all job applications with optional filtering and pagination
+ * Get all job roles with optional filtering and pagination
  */
-export async function getAllJobApplications(
-	req: Request<Record<string, never>, unknown, unknown, JobApplicationsQuery>,
-	res: Response<ApiResponse<PaginatedResponse<JobApplicationResponse>>>
+export async function getAllJobRoles(
+	req: Request<Record<string, never>, unknown, unknown, JobRolesQuery>,
+	res: Response<ApiResponse<PaginatedResponse<JobRoleResponse>>>
 ): Promise<void> {
 	try {
 		const {
@@ -62,7 +62,7 @@ export async function getAllJobApplications(
 			.offset(offset);
 
 		// Convert timestamps to ISO strings
-		const formattedResults: JobApplicationResponse[] = results.map((job) => ({
+		const formattedResults: JobRoleResponse[] = results.map((job) => ({
 			...job,
 			createdAt: new Date(job.createdAt).toISOString(),
 			updatedAt: new Date(job.updatedAt).toISOString(),
@@ -84,7 +84,7 @@ export async function getAllJobApplications(
 			},
 		});
 	} catch (error) {
-		console.error("Error getting job applications:", error);
+		console.error("Error getting job roles:", error);
 		res.status(500).json({
 			success: false,
 			error: "Internal server error",
@@ -93,11 +93,11 @@ export async function getAllJobApplications(
 }
 
 /**
- * Get a specific job application by ID
+ * Get a specific job role by ID
  */
-export async function getJobApplicationById(
+export async function getJobRoleById(
 	req: Request<{ id: string }>,
-	res: Response<ApiResponse<JobApplicationResponse>>
+	res: Response<ApiResponse<JobRoleResponse>>
 ): Promise<void> {
 	try {
 		const { id } = req.params;
@@ -106,7 +106,7 @@ export async function getJobApplicationById(
 		if (Number.isNaN(jobId)) {
 			res.status(400).json({
 				success: false,
-				error: "Invalid job application ID",
+				error: "Invalid job role ID",
 			});
 			return;
 		}
@@ -120,12 +120,12 @@ export async function getJobApplicationById(
 		if (!job) {
 			res.status(404).json({
 				success: false,
-				error: "Job application not found",
+				error: "Job role not found",
 			});
 			return;
 		}
 
-		const formattedJob: JobApplicationResponse = {
+		const formattedJob: JobRoleResponse = {
 			...job,
 			createdAt: new Date(job.createdAt).toISOString(),
 			updatedAt: new Date(job.updatedAt).toISOString(),
@@ -137,7 +137,7 @@ export async function getJobApplicationById(
 			data: formattedJob,
 		});
 	} catch (error) {
-		console.error("Error getting job application:", error);
+		console.error("Error getting job role:", error);
 		res.status(500).json({
 			success: false,
 			error: "Internal server error",
@@ -146,11 +146,11 @@ export async function getJobApplicationById(
 }
 
 /**
- * Get active job applications (status = 'active' and closing date in future)
+ * Get active job roles (status = 'active' and closing date in future)
  */
-export async function getActiveJobApplications(
-	req: Request<Record<string, never>, unknown, unknown, JobApplicationsQuery>,
-	res: Response<ApiResponse<PaginatedResponse<JobApplicationResponse>>>
+export async function getActiveJobRoles(
+	req: Request<Record<string, never>, unknown, unknown, JobRolesQuery>,
+	res: Response<ApiResponse<PaginatedResponse<JobRoleResponse>>>
 ): Promise<void> {
 	try {
 		const { page = 1, limit = 10, capability, location, band } = req.query;
@@ -185,14 +185,12 @@ export async function getActiveJobApplications(
 		const activeJobs = results.filter((job) => new Date(job.closingDate) > now);
 
 		// Convert timestamps to ISO strings
-		const formattedResults: JobApplicationResponse[] = activeJobs.map(
-			(job) => ({
-				...job,
-				createdAt: new Date(job.createdAt).toISOString(),
-				updatedAt: new Date(job.updatedAt).toISOString(),
-				closingDate: new Date(job.closingDate).toISOString(),
-			})
-		);
+		const formattedResults: JobRoleResponse[] = activeJobs.map((job) => ({
+			...job,
+			createdAt: new Date(job.createdAt).toISOString(),
+			updatedAt: new Date(job.updatedAt).toISOString(),
+			closingDate: new Date(job.closingDate).toISOString(),
+		}));
 
 		const totalPages = Math.ceil(activeJobs.length / limit);
 

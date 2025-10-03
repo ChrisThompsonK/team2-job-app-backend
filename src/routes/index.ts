@@ -1,10 +1,10 @@
 import { Router } from "express";
-import jobApplicationRoutes from "./jobApplicationRoutes";
+import jobRoleRoutes from "./jobRoleRoutes";
 
 const router = Router();
 
 // Job application routes
-router.use("/jobs", jobApplicationRoutes);
+router.use("/jobs", jobRoleRoutes);
 
 // Health check route
 router.get("/health", (_req, res) => {

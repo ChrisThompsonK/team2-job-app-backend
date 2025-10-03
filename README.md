@@ -1,8 +1,8 @@
 [![Code Quality](https://github.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml/badge.svg)](https://github.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml) [![Formatted with Biome](https://img.shields.io/badge/Formatted_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev/) 
 
-# Team 2 Job Application Backend
+# Team 2 Job Roles Backend
 
-A modern Node.js TypeScript REST API for managing job applications with full CRUD operations, built with Express, Drizzle ORM, and SQLite.
+A modern Node.js TypeScript REST API for managing job roles with full CRUD operations, built with Express, Drizzle ORM, and SQLite.
 
 ## 🚀 Features
 
@@ -14,8 +14,8 @@ A modern Node.js TypeScript REST API for managing job applications with full CRU
 - **tsx**: Fast TypeScript execution for development
 - **Biome**: Ultra-fast formatter, linter, and code quality tools
 
-### Job Application Management
-- **Complete CRUD Operations**: Create, Read, Update, Delete job applications
+### Job Role Management
+- **Complete CRUD Operations**: Create, Read, Update, Delete job roles
 - **Advanced Filtering**: Filter by status, capability, location, and band
 - **Pagination Support**: Efficient handling of large datasets
 - **Data Validation**: Comprehensive input validation and error handling
@@ -27,21 +27,21 @@ A modern Node.js TypeScript REST API for managing job applications with full CRU
 - **Data Seeding**: Sample data for development and testing
 - **Type Safety**: Full TypeScript integration with database operations
 
-## 📦 Project Structure
+## � Job Role API
 ```
 ├── src/
 │   ├── controllers/          # API controllers for business logic
-│   │   └── jobApplicationController.ts
+│   │   └── jobRoleController.ts
 │   ├── db/                   # Database configuration and schema
 │   │   ├── index.ts         # Database connection setup
 │   │   └── schema.ts        # Drizzle schema definitions
 │   ├── routes/              # Express route definitions
 │   │   ├── index.ts         # Main router
-│   │   └── jobApplicationRoutes.ts
+│   │   └── jobRoleRoutes.ts
 │   ├── scripts/             # Utility scripts
 │   │   └── seedDatabase.ts  # Database seeding script
 │   ├── types/               # TypeScript type definitions
-│   │   └── jobApplication.ts
+│   │   └── jobRole.ts
 │   └── index.ts             # Main application entry point
 ├── drizzle/                 # Database migration files
 ├── dist/                    # Compiled JavaScript output
@@ -119,13 +119,13 @@ npm run format:fix  # Fix formatting issues
 # Test health endpoint
 curl http://localhost:3000/api/health
 
-# Get all job applications
+# Get all job roles
 curl http://localhost:3000/api/jobs
 
 # Get active jobs only
 curl http://localhost:3000/api/jobs/active
 
-# Create a new job application
+# Create a new job role
 curl -X POST http://localhost:3000/api/jobs \
   -H "Content-Type: application/json" \
   -d '{"jobRoleName":"Test Job","description":"Test Description",...}'
@@ -157,9 +157,9 @@ curl -X POST http://localhost:3000/api/jobs \
 
 ## � Job Application API
 
-This API manages job applications with all required properties for a job portal:
+This API manages job roles with all required properties for a job portal:
 
-### Job Application Properties
+### Job Role Properties
 - **Job Role Name**: Position title
 - **Description**: Job description
 - **Responsibilities**: Key responsibilities
@@ -172,15 +172,15 @@ This API manages job applications with all required properties for a job portal:
 - **Number of Open Positions**: Available positions
 
 ### Available Endpoints
-- `GET /api/jobs` - Get all job applications (with filtering & pagination)
-- `GET /api/jobs/active` - Get only active job applications
-- `GET /api/jobs/:id` - Get specific job application
-- `POST /api/jobs` - Create new job application
-- `PUT /api/jobs/:id` - Update job application
-- `DELETE /api/jobs/:id` - Delete job application
+- `GET /api/jobs` - Get all job roles (with filtering & pagination)
+- `GET /api/jobs/active` - Get only active job roles
+- `GET /api/jobs/:id` - Get specific job role
+- `POST /api/jobs` - Create new job role
+- `PUT /api/jobs/:id` - Update job role
+- `DELETE /api/jobs/:id` - Delete job role
 - `GET /api/health` - API health check
 
-### Sample Job Applications
+### Sample Job Roles
 The database comes pre-seeded with sample jobs including:
 - Senior Software Engineer (Engineering, London)
 - Product Manager (Product, Manchester)  

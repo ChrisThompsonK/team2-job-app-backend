@@ -1,6 +1,6 @@
-# Job Application API Documentation
+# Job Role API Documentation
 
-This API provides endpoints to manage job applications for a job portal system. Each job application includes all the required properties for posting and managing job positions.
+This API provides endpoints to manage job roles for a job portal system. Each job role includes all the required properties for posting and managing job positions.
 
 ## Base URL
 ```
@@ -9,8 +9,8 @@ http://localhost:3000/api
 
 ## Data Models
 
-### Job Application
-A job application contains the following properties:
+### Job Role
+A job role contains the following properties:
 - **id**: Unique identifier (auto-generated)
 - **jobRoleName**: Name of the job position
 - **description**: Job description
@@ -27,12 +27,12 @@ A job application contains the following properties:
 
 ## Endpoints
 
-### 1. Get All Job Applications
+### 1. Get All Job Roles
 ```http
 GET /api/jobs
 ```
 
-Retrieve all job applications with optional filtering and pagination.
+Retrieve all job roles with optional filtering and pagination.
 
 **Query Parameters:**
 - `page` (optional): Page number for pagination (default: 1)
@@ -79,12 +79,12 @@ curl "http://localhost:3000/api/jobs?status=active&capability=Engineering&page=1
 }
 ```
 
-### 2. Get Active Job Applications
+### 2. Get Active Job Roles
 ```http
 GET /api/jobs/active
 ```
 
-Retrieve only active job applications (status = 'active' and closing date in the future).
+Retrieve only active job roles (status = 'active' and closing date in the future).
 
 **Query Parameters:**
 - `page` (optional): Page number for pagination (default: 1)
@@ -93,24 +93,24 @@ Retrieve only active job applications (status = 'active' and closing date in the
 - `location` (optional): Filter by location (partial match)
 - `band` (optional): Filter by band (exact match)
 
-### 3. Get Job Application by ID
+### 3. Get Job Role by ID
 ```http
 GET /api/jobs/:id
 ```
 
-Retrieve a specific job application by its ID.
+Retrieve a specific job role by its ID.
 
 **Example Request:**
 ```bash
 curl "http://localhost:3000/api/jobs/1"
 ```
 
-### 4. Create Job Application
+### 4. Create Job Role
 ```http
 POST /api/jobs
 ```
 
-Create a new job application.
+Create a new job role.
 
 **Request Body:**
 ```json
@@ -144,12 +144,12 @@ curl -X POST "http://localhost:3000/api/jobs" \
   }'
 ```
 
-### 5. Update Job Application
+### 5. Update Job Role
 ```http
 PUT /api/jobs/:id
 ```
 
-Update an existing job application. Only provided fields will be updated.
+Update an existing job role. Only provided fields will be updated.
 
 **Request Body (all fields optional):**
 ```json
@@ -160,12 +160,12 @@ Update an existing job application. Only provided fields will be updated.
 }
 ```
 
-### 6. Delete Job Application
+### 6. Delete Job Role
 ```http
 DELETE /api/jobs/:id
 ```
 
-Delete a job application by ID.
+Delete a job role by ID.
 
 **Example Request:**
 ```bash
@@ -186,7 +186,7 @@ Check API health status.
 {
   "status": "OK",
   "timestamp": "2025-10-03T12:00:00.000Z",
-  "service": "Job Application API"
+  "service": "Job Role API"
 }
 ```
 
@@ -210,7 +210,7 @@ All endpoints return consistent error responses:
 
 ## Usage Examples
 
-### Filtering Job Applications
+### Filtering Job Roles
 ```bash
 # Get active Engineering jobs in London
 curl "http://localhost:3000/api/jobs/active?capability=Engineering&location=London"
@@ -222,7 +222,7 @@ curl "http://localhost:3000/api/jobs?band=Senior"
 curl "http://localhost:3000/api/jobs?status=draft&page=2&limit=5"
 ```
 
-### Creating a Complete Job Application
+### Creating a Complete Job Role
 ```bash
 curl -X POST "http://localhost:3000/api/jobs" \
   -H "Content-Type: application/json" \

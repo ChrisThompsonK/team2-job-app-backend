@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { CreateJobApplicationRequest } from "../types/jobApplication";
+import type { CreateJobRoleRequest } from "../types/jobRole";
 
-describe("Job Application Types", () => {
-	it("should have correct job application structure", () => {
-		const sampleRequest: CreateJobApplicationRequest = {
+describe("Job Role Types", () => {
+	it("should have correct job role structure", () => {
+		const sampleRequest: CreateJobRoleRequest = {
 			jobRoleName: "Test Developer",
 			description: "Test description",
 			responsibilities: "Test responsibilities",
