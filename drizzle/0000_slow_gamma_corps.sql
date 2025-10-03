@@ -1,5 +1,5 @@
 --> statement-breakpoint
-CREATE TABLE `job_applications` (
+CREATE TABLE `job_roles` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`job_role_name` text NOT NULL,
 	`description` text NOT NULL,

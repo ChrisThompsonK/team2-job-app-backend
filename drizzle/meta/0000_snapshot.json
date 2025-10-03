@@ -67,10 +67,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "application_submissions_job_application_id_job_applications_id_fk": {
-          "name": "application_submissions_job_application_id_job_applications_id_fk",
+        "application_submissions_job_application_id_job_roles_id_fk": {
+          "name": "application_submissions_job_application_id_job_roles_id_fk",
           "tableFrom": "application_submissions",
-          "tableTo": "job_applications",
+          "tableTo": "job_roles",
           "columnsFrom": [
             "job_application_id"
           ],
@@ -98,8 +98,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "job_applications": {
-      "name": "job_applications",
+    "job_roles": {
+      "name": "job_roles",
       "columns": {
         "id": {
           "name": "id",
