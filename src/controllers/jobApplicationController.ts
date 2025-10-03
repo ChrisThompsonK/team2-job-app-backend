@@ -1,7 +1,7 @@
 import { and, count, desc, eq, like } from "drizzle-orm";
 import type { Request, Response } from "express";
 import { db } from "../db/index";
-import { jobApplications } from "../db/schema";
+import { jobRoles } from "../db/schema";
 import type {
 	ApiResponse,
 	JobApplicationResponse,
@@ -29,16 +29,16 @@ export async function getAllJobApplications(
 		// Build where conditions
 		const conditions = [];
 		if (status) {
-			conditions.push(eq(jobApplications.status, status));
+			conditions.push(eq(jobRoles.status, status));
 		}
 		if (capability) {
-			conditions.push(like(jobApplications.capability, `%${capability}%`));
+			conditions.push(like(jobRoles.capability, `%${capability}%`));
 		}
 		if (location) {
-			conditions.push(like(jobApplications.location, `%${location}%`));
+			conditions.push(like(jobRoles.location, `%${location}%`));
 		}
 		if (band) {
-			conditions.push(eq(jobApplications.band, band));
+			conditions.push(eq(jobRoles.band, band));
 		}
 
 		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -46,7 +46,7 @@ export async function getAllJobApplications(
 		// Get total count for pagination
 		const countResult = await db
 			.select({ total: count() })
-			.from(jobApplications)
+			.from(jobRoles)
 			.where(whereClause);
 
 		const total = countResult[0]?.total ?? 0;
@@ -55,9 +55,9 @@ export async function getAllJobApplications(
 		const offset = (page - 1) * limit;
 		const results = await db
 			.select()
-			.from(jobApplications)
+			.from(jobRoles)
 			.where(whereClause)
-			.orderBy(desc(jobApplications.createdAt))
+			.orderBy(desc(jobRoles.createdAt))
 			.limit(limit)
 			.offset(offset);
 
@@ -113,8 +113,8 @@ export async function getJobApplicationById(
 
 		const [job] = await db
 			.select()
-			.from(jobApplications)
-			.where(eq(jobApplications.id, jobId))
+			.from(jobRoles)
+			.where(eq(jobRoles.id, jobId))
 			.limit(1);
 
 		if (!job) {
@@ -156,16 +156,16 @@ export async function getActiveJobApplications(
 		const { page = 1, limit = 10, capability, location, band } = req.query;
 
 		// Build where conditions for active jobs
-		const conditions = [eq(jobApplications.status, "active")];
+		const conditions = [eq(jobRoles.status, "active")];
 
 		if (capability) {
-			conditions.push(like(jobApplications.capability, `%${capability}%`));
+			conditions.push(like(jobRoles.capability, `%${capability}%`));
 		}
 		if (location) {
-			conditions.push(like(jobApplications.location, `%${location}%`));
+			conditions.push(like(jobRoles.location, `%${location}%`));
 		}
 		if (band) {
-			conditions.push(eq(jobApplications.band, band));
+			conditions.push(eq(jobRoles.band, band));
 		}
 
 		const whereClause = and(...conditions);
@@ -174,9 +174,9 @@ export async function getActiveJobApplications(
 		const offset = (page - 1) * limit;
 		const results = await db
 			.select()
-			.from(jobApplications)
+			.from(jobRoles)
 			.where(whereClause)
-			.orderBy(desc(jobApplications.createdAt))
+			.orderBy(desc(jobRoles.createdAt))
 			.limit(limit)
 			.offset(offset);
 

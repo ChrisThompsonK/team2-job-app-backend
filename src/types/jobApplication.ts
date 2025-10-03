@@ -1,9 +1,9 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import type { jobApplications } from "../db/schema";
+import type { jobRoles } from "../db/schema";
 
 // Job Application types
-export type JobApplication = InferSelectModel<typeof jobApplications>;
-export type NewJobApplication = InferInsertModel<typeof jobApplications>;
+export type JobRole = InferSelectModel<typeof jobRoles>;
+export type NewJobRole = InferInsertModel<typeof jobRoles>;
 
 // Request/Response types for API
 export interface CreateJobApplicationRequest {
@@ -32,7 +32,7 @@ export interface UpdateJobApplicationRequest {
 }
 
 export interface JobApplicationResponse
-	extends Omit<JobApplication, "createdAt" | "updatedAt" | "closingDate"> {
+	extends Omit<JobRole, "createdAt" | "updatedAt" | "closingDate"> {
 	createdAt: string; // ISO date string
 	updatedAt: string; // ISO date string
 	closingDate: string; // ISO date string

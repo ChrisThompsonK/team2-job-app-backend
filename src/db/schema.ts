@@ -1,7 +1,7 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-// Job Applications table with all required properties
-export const jobApplications = sqliteTable("job_applications", {
+// Job Roles table - represents available job roles that people can apply for
+export const jobRoles = sqliteTable("job_roles", {
 	id: integer("id").primaryKey(),
 	jobRoleName: text("job_role_name").notNull(),
 	description: text("description").notNull(),

@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { db } from "../db/index";
-import { jobApplications } from "../db/schema";
+import { jobRoles } from "../db/schema";
 
 async function seedDatabase(): Promise<void> {
 	console.log("🌱 Starting database seeding...");
@@ -13,7 +13,7 @@ async function seedDatabase(): Promise<void> {
 		futureDate.setMonth(futureDate.getMonth() + 2);
 
 		const sampleJobs = await db
-			.insert(jobApplications)
+			.insert(jobRoles)
 			.values([
 				{
 					jobRoleName: "Senior Software Engineer",

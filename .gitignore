@@ -144,3 +144,14 @@ Icon?
 
 # Backup files
 *.bak
+
+# Database files
+# Keep the main development database but ignore backups and temporary files
+database_backup.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db-shm
+*.db-wal
+
+# Drizzle Studio
+.drizzle
