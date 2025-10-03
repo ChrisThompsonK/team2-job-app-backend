@@ -128,7 +128,6 @@ export async function getActiveJobRoles(
 			updatedAt: new Date(job.updatedAt).toISOString(),
 			closingDate: new Date(job.closingDate).toISOString(),
 		}));
-
 		res.json({
 			success: true,
 			data: formattedResults,
