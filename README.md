@@ -1,28 +1,57 @@
 [![Code Quality](https://github.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml/badge.svg)](https://github.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml) [![Formatted with Biome](https://img.shields.io/badge/Formatted_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev/) 
 
-# Team 2 Job App BackEnd
+# Team 2 Job Application Backend
 
-A modern Node.js TypeScript application with ES modules support.
+A modern Node.js TypeScript REST API for managing job applications with full CRUD operations, built with Express, Drizzle ORM, and SQLite.
 
 ## 🚀 Features
 
+### Core Technologies
 - **TypeScript**: Full TypeScript support with strict type checking
+- **Express.js**: Fast, unopinionated web framework for Node.js
+- **Drizzle ORM**: Type-safe database ORM with SQLite
 - **ES Modules**: Modern JavaScript module system
 - **tsx**: Fast TypeScript execution for development
-- **Modern Node.js**: Latest JavaScript features (ES2022)
 - **Biome**: Ultra-fast formatter, linter, and code quality tools
-- **Strict Configuration**: Comprehensive TypeScript compiler options
+
+### Job Application Management
+- **Complete CRUD Operations**: Create, Read, Update, Delete job applications
+- **Advanced Filtering**: Filter by status, capability, location, and band
+- **Pagination Support**: Efficient handling of large datasets
+- **Data Validation**: Comprehensive input validation and error handling
+- **RESTful API Design**: Clean, intuitive API endpoints
+
+### Database Features
+- **SQLite Database**: Lightweight, serverless database
+- **Database Migrations**: Version-controlled schema changes
+- **Data Seeding**: Sample data for development and testing
+- **Type Safety**: Full TypeScript integration with database operations
 
 ## 📦 Project Structure
 ```
 ├── src/
-│   └── index.ts          # Main application entry point
-├── dist/                 # Compiled JavaScript output
-├── package.json          # Project configuration
-├── tsconfig.json         # TypeScript configuration
-├── vitest.config.ts      # Vitest testing configuration
-├── biome.json           # Biome linter and formatter configuration
-└── .gitignore           # Git ignore rules
+│   ├── controllers/          # API controllers for business logic
+│   │   └── jobApplicationController.ts
+│   ├── db/                   # Database configuration and schema
+│   │   ├── index.ts         # Database connection setup
+│   │   └── schema.ts        # Drizzle schema definitions
+│   ├── routes/              # Express route definitions
+│   │   ├── index.ts         # Main router
+│   │   └── jobApplicationRoutes.ts
+│   ├── scripts/             # Utility scripts
+│   │   └── seedDatabase.ts  # Database seeding script
+│   ├── types/               # TypeScript type definitions
+│   │   └── jobApplication.ts
+│   └── index.ts             # Main application entry point
+├── drizzle/                 # Database migration files
+├── dist/                    # Compiled JavaScript output
+├── database.sqlite          # SQLite database file
+├── package.json             # Project configuration
+├── tsconfig.json           # TypeScript configuration
+├── drizzle.config.ts       # Drizzle ORM configuration
+├── vitest.config.ts        # Vitest testing configuration
+├── biome.json              # Biome linter and formatter configuration
+└── API_DOCUMENTATION.md    # Complete API documentation
 ```
 
 ## 🛠️ Available Scripts
@@ -48,13 +77,32 @@ A modern Node.js TypeScript application with ES modules support.
 - **`npm run check`**: Run both linting and formatting checks
 - **`npm run check:fix`**: Fix both linting and formatting issues automatically
 
+### Database Management (Drizzle)
+- **`npm run db:generate`**: Generate migration files from schema changes
+- **`npm run db:migrate`**: Run database migrations
+- **`npm run db:push`**: Push schema changes directly to database
+- **`npm run db:studio`**: Launch Drizzle Studio (database GUI)
+- **`npm run db:seed`**: Populate database with sample data
+
 ## 🔧 Development
 
+### Quick Start
+1. **Install Dependencies**: `npm install`
+2. **Setup Database**: `npm run db:push`
+3. **Seed Sample Data**: `npm run db:seed`
+4. **Start Development**: `npm run dev`
+5. **API Available**: `http://localhost:3000/api`
+
+### Development Workflow
 1. **Development Mode**: Use `npm run dev` for fast development with tsx
-2. **Testing**: Run `npm test` for watch mode or `npm run test:run` for single run
-3. **Type Checking**: Run `npm run type-check` to validate TypeScript without compilation
-4. **Code Quality**: Use `npm run check:fix` to automatically fix linting and formatting issues
-5. **Production Build**: Use `npm run build` to compile for production
+2. **Database Changes**: 
+   - Update schema in `src/db/schema.ts`
+   - Run `npm run db:generate` to create migration
+   - Run `npm run db:push` to apply changes
+3. **Testing**: Run `npm test` for watch mode or `npm run test:run` for single run
+4. **Type Checking**: Run `npm run type-check` to validate TypeScript
+5. **Code Quality**: Use `npm run check:fix` to fix linting and formatting
+6. **Database GUI**: Use `npm run db:studio` to explore data
 
 ### Code Quality Workflow
 ```bash
@@ -66,17 +114,83 @@ npm run lint:fix    # Fix linting issues
 npm run format:fix  # Fix formatting issues
 ```
 
+### API Testing
+```bash
+# Test health endpoint
+curl http://localhost:3000/api/health
+
+# Get all job applications
+curl http://localhost:3000/api/jobs
+
+# Get active jobs only
+curl http://localhost:3000/api/jobs/active
+
+# Create a new job application
+curl -X POST http://localhost:3000/api/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"jobRoleName":"Test Job","description":"Test Description",...}'
+```
+
 ## 🏗️ Tech Stack
 
+### Backend Framework
 - **Node.js**: Runtime environment
 - **TypeScript**: Type-safe JavaScript
-- **Express**: Fast web framework for Node.js
-- **Vitest**: Next generation testing framework
-- **tsx**: TypeScript execution engine
-- **ES Modules**: Modern module system
-- **Biome**: Fast formatter, linter, and import organizer
+- **Express.js**: Fast, unopinionated web framework
 
-## 📝 Configuration
+### Database
+- **SQLite**: Lightweight, serverless database
+- **Drizzle ORM**: Type-safe database ORM
+- **better-sqlite3**: Fast SQLite driver for Node.js
+
+### Development Tools
+- **tsx**: TypeScript execution engine
+- **Vitest**: Next generation testing framework
+- **Biome**: Fast formatter, linter, and import organizer
+- **ES Modules**: Modern module system
+
+### API Features
+- **RESTful Design**: Clean, intuitive API endpoints
+- **JSON API**: Standard JSON request/response format
+- **Error Handling**: Comprehensive error responses
+- **Input Validation**: Request validation and sanitization
+
+## � Job Application API
+
+This API manages job applications with all required properties for a job portal:
+
+### Job Application Properties
+- **Job Role Name**: Position title
+- **Description**: Job description
+- **Responsibilities**: Key responsibilities
+- **Job Spec Link**: SharePoint link to detailed job specification
+- **Location**: Job location
+- **Capability**: Department/capability area
+- **Band**: Job level (Junior, Mid, Senior, etc.)
+- **Closing Date**: Application deadline
+- **Status**: Current status (active, closed, draft)
+- **Number of Open Positions**: Available positions
+
+### Available Endpoints
+- `GET /api/jobs` - Get all job applications (with filtering & pagination)
+- `GET /api/jobs/active` - Get only active job applications
+- `GET /api/jobs/:id` - Get specific job application
+- `POST /api/jobs` - Create new job application
+- `PUT /api/jobs/:id` - Update job application
+- `DELETE /api/jobs/:id` - Delete job application
+- `GET /api/health` - API health check
+
+### Sample Job Applications
+The database comes pre-seeded with sample jobs including:
+- Senior Software Engineer (Engineering, London)
+- Product Manager (Product, Manchester)  
+- UX Designer (Design, Birmingham)
+- Data Analyst (Analytics, Leeds)
+- DevOps Engineer (Engineering, Remote)
+
+📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
+
+## �📝 Configuration
 
 The project uses modern TypeScript configuration with:
 - ES2022 target and lib

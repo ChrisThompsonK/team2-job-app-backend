@@ -7,6 +7,7 @@ import express, {
 	type Request,
 	type Response,
 } from "express";
+import apiRoutes from "./routes/index";
 
 interface AppConfig {
 	name: string;
@@ -45,6 +46,9 @@ class App {
 				timestamp: new Date().toISOString(),
 			});
 		});
+
+		// API routes
+		this.server.use("/api", apiRoutes);
 	}
 
 	public start(): void {
