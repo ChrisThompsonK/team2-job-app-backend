@@ -4,27 +4,19 @@ import type {
 	ApiResponse,
 	JobRoleResponse,
 	JobRolesQuery,
-	PaginatedResponse,
 } from "../types/jobRole";
 
 /**
- * Get all job roles with optional filtering and pagination
+ * Get all job roles with optional filtering
  */
 export async function getAllJobRoles(
 	req: Request<Record<string, never>, unknown, unknown, JobRolesQuery>,
-	res: Response<ApiResponse<PaginatedResponse<JobRoleResponse>>>
+	res: Response<ApiResponse<JobRoleResponse[]>>
 ): Promise<void> {
 	try {
-		const {
-			page = 1,
-			limit = 10,
-			status,
-			capability,
-			location,
-			band,
-		} = req.query;
+		const { status, capability, location, band } = req.query;
 
-		// Get total count for pagination
+		// Build filters
 		const filters = {
 			...(status && { status }),
 			...(capability && { capability }),
@@ -32,15 +24,8 @@ export async function getAllJobRoles(
 			...(band && { band }),
 		};
 
-		const total = await jobRoleRepository.getJobRoleCount(filters);
-
-		// Get paginated results
-		const offset = (page - 1) * limit;
-		const results = await jobRoleRepository.getAllJobRoles({
-			...filters,
-			limit,
-			offset,
-		});
+		// Get all results
+		const results = await jobRoleRepository.getAllJobRoles(filters);
 
 		// Convert timestamps to ISO strings
 		const formattedResults: JobRoleResponse[] = results.map((job) => ({
@@ -50,19 +35,9 @@ export async function getAllJobRoles(
 			closingDate: new Date(job.closingDate).toISOString(),
 		}));
 
-		const totalPages = Math.ceil(total / limit);
-
 		res.json({
 			success: true,
-			data: {
-				data: formattedResults,
-				pagination: {
-					page,
-					limit,
-					total,
-					totalPages,
-				},
-			},
+			data: formattedResults,
 		});
 	} catch (error) {
 		console.error("Error getting job roles:", error);
@@ -127,10 +102,10 @@ export async function getJobRoleById(
  */
 export async function getActiveJobRoles(
 	req: Request<Record<string, never>, unknown, unknown, JobRolesQuery>,
-	res: Response<ApiResponse<PaginatedResponse<JobRoleResponse>>>
+	res: Response<ApiResponse<JobRoleResponse[]>>
 ): Promise<void> {
 	try {
-		const { page = 1, limit = 10, capability, location, band } = req.query;
+		const { capability, location, band } = req.query;
 
 		// Build filters for active jobs
 		const filters = {
@@ -139,16 +114,8 @@ export async function getActiveJobRoles(
 			...(band && { band }),
 		};
 
-		// Get total count for pagination
-		const total = await jobRoleRepository.getActiveJobRoleCount(filters);
-
-		// Get paginated results
-		const offset = (page - 1) * limit;
-		const results = await jobRoleRepository.getActiveJobRoles({
-			...filters,
-			limit,
-			offset,
-		});
+		// Get all active results
+		const results = await jobRoleRepository.getActiveJobRoles(filters);
 
 		// Filter out jobs that have passed closing date
 		const now = new Date();
@@ -162,19 +129,9 @@ export async function getActiveJobRoles(
 			closingDate: new Date(job.closingDate).toISOString(),
 		}));
 
-		const totalPages = Math.ceil(total / limit);
-
 		res.json({
 			success: true,
-			data: {
-				data: formattedResults,
-				pagination: {
-					page,
-					limit,
-					total,
-					totalPages,
-				},
-			},
+			data: formattedResults,
 		});
 	} catch (error) {
 		console.error("Error getting active job applications:", error);

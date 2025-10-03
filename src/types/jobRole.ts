@@ -44,12 +44,7 @@ export interface CreateApplicationSubmissionRequest {
 	resumeUrl?: string;
 }
 
-export interface PaginationQuery {
-	page?: number;
-	limit?: number;
-}
-
-export interface JobRolesQuery extends PaginationQuery {
+export interface JobRolesQuery {
 	status?: "active" | "closed" | "draft";
 	capability?: string;
 	location?: string;
@@ -61,14 +56,4 @@ export interface ApiResponse<T> {
 	data?: T;
 	message?: string;
 	error?: string;
-}
-
-export interface PaginatedResponse<T> {
-	data: T[];
-	pagination: {
-		page: number;
-		limit: number;
-		total: number;
-		totalPages: number;
-	};
 }
