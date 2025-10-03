@@ -139,31 +139,28 @@ export async function getActiveJobRoles(
 			...(band && { band }),
 		};
 
-		// Get total count for pagination
-		const total = await jobRoleRepository.getActiveJobRoleCount(filters);
-
-		// Get paginated results
-		const offset = (page - 1) * limit;
-		const results = await jobRoleRepository.getActiveJobRoles({
-			...filters,
-			limit,
-			offset,
-		});
+		// Get all results matching filters (no pagination yet)
+		const results = await jobRoleRepository.getActiveJobRoles(filters);
 
 		// Filter out jobs that have passed closing date
 		const now = new Date();
 		const activeJobs = results.filter((job) => new Date(job.closingDate) > now);
 
+		// Calculate total after filtering
+		const total = activeJobs.length;
+		const totalPages = Math.ceil(total / limit);
+
+		// Paginate in memory
+		const offset = (page - 1) * limit;
+		const paginatedJobs = activeJobs.slice(offset, offset + limit);
+
 		// Convert timestamps to ISO strings
-		const formattedResults: JobRoleResponse[] = activeJobs.map((job) => ({
+		const formattedResults: JobRoleResponse[] = paginatedJobs.map((job) => ({
 			...job,
 			createdAt: new Date(job.createdAt).toISOString(),
 			updatedAt: new Date(job.updatedAt).toISOString(),
 			closingDate: new Date(job.closingDate).toISOString(),
 		}));
-
-		const totalPages = Math.ceil(total / limit);
-
 		res.json({
 			success: true,
 			data: {
