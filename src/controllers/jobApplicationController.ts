@@ -4,11 +4,9 @@ import { db } from "../db/index";
 import { jobApplications } from "../db/schema";
 import type {
 	ApiResponse,
-	CreateJobApplicationRequest,
 	JobApplicationResponse,
 	JobApplicationsQuery,
 	PaginatedResponse,
-	UpdateJobApplicationRequest,
 } from "../types/jobApplication";
 
 /**
@@ -146,7 +144,6 @@ export async function getJobApplicationById(
 		});
 	}
 }
-
 
 /**
  * Get active job applications (status = 'active' and closing date in future)
