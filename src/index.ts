@@ -2,12 +2,12 @@
  * Main entry point for the Express application
  */
 
-import { config, isDevelopment, logConfiguration } from "./config/index";
 import express, {
 	type Application,
 	type Request,
 	type Response,
 } from "express";
+import { config, isDevelopment, logConfiguration } from "./config/index";
 import apiRoutes from "./routes/index";
 
 interface AppConfig {
