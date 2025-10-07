@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { getAllJobRoles, getJobRoleById } from "../controllers/jobRoleController";
+import {
+	getAllJobRoles,
+	getJobRoleById,
+} from "../controllers/jobRoleController";
 
 const router = Router();
 
