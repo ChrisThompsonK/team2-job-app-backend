@@ -1,19 +1,15 @@
 import { Router } from "express";
 import {
-	getActiveJobRoles,
 	getAllJobRoles,
 	getJobRoleById,
 } from "../controllers/jobRoleController";
 
 const router = Router();
 
-// GET /api/jobs - Get all job roles with filtering and pagination
+// GET /api/job-roles - Get all job roles
 router.get("/", getAllJobRoles);
 
-// GET /api/jobs/active - Get only active job roles
-router.get("/active", getActiveJobRoles);
-
-// GET /api/jobs/:id - Get a specific job role by ID
+// GET /api/job-roles/:id - Get a specific job role by ID
 router.get("/:id", getJobRoleById);
 
 export default router;
