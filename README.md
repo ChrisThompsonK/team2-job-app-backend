@@ -1,4 +1,88 @@
-[![Code Quality](https://github.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml/badge.svg)](https://github.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml) [![Formatted with Biome](https://img.shields.io/badge/Formatted_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev/) 
+[![Code Quality](https:### Database Features
+- **SQLite Database**: Lightweight, serverless database
+- **Database Migrations**: Version-controlled schema changes
+- **Data Seeding**: Sample data for development and testing
+- **Type Safety**: Full TypeScript integration with database operations📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
+
+## 🏗️ Tech Stack
+
+- **Runtime**: Node.js with TypeScript
+- **Web Framework**: Express.js
+- **Database**: SQLite with Drizzle ORM
+- **Code Quality**: Biome (linting and formatting)
+- **Testing**: Vitest
+- **Environment Management**: dotenv
+- **Type Safety**: TypeScript with strict mode
+- **Module System**: ES Modules
+
+## 📝 Configuration# 🔧 Environment Configuration
+
+This project uses environment variables for secure configuration management.
+
+### Setup Environment Variables
+
+1. **Copy the example file**:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Update values in `.env`** as needed for your environment
+
+### Available Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `NODE_ENV` | Environment mode (`development`, `test`, `production`) | `development` | ✅ |
+| `PORT` | Server port number | `3000` | ✅ |
+| `DATABASE_URL` | Path to SQLite database file | `./database.sqlite` | ✅ |
+| `API_PREFIX` | API route prefix | `/api` | ✅ |
+| `CORS_ORIGIN` | Allowed CORS origin URL | `http://localhost:5173` | ✅ |
+| `LOG_LEVEL` | Logging level (`error`, `warn`, `info`, `debug`) | `info` | ✅ |
+
+### Environment Validation
+
+The application automatically validates all required environment variables on startup. If any required variables are missing or invalid, the application will throw a descriptive error.
+
+### Security Best Practices
+
+- ✅ **Never commit `.env` files** - They are excluded in `.gitignore`
+- ✅ **Use `.env.example`** - Documents required variables without sensitive values
+- ✅ **Different environments** - Use different `.env` files for dev, staging, and production
+- ✅ **Rotate secrets** - Regularly update sensitive values in production environments
+
+## 📁 Project Structure
+```
+team2-job-app-backend/
+├── src/
+│   ├── __tests__/           # Test files
+│   │   └── jobRole.test.ts
+│   ├── config/              # Configuration files
+│   │   └── env.ts          # Environment variable validation
+│   ├── controllers/         # API controllers for business logic
+│   │   └── jobRoleController.ts
+│   ├── db/                  # Database configuration and schema
+│   │   ├── index.ts        # Database connection setup
+│   │   └── schema.ts       # Drizzle schema definitions
+│   ├── repositories/        # Data access layer
+│   │   └── jobRoleRepository.ts
+│   ├── routes/              # Express route definitions
+│   │   ├── index.ts        # Main router
+│   │   └── jobRoleRoutes.ts
+│   ├── scripts/             # Utility scripts
+│   │   └── seedDatabase.ts # Database seeding script
+│   ├── types/               # TypeScript type definitions
+│   │   └── jobRole.ts
+│   └── index.ts             # Main application entry point
+├── drizzle/                 # Database migration files
+├── .env.example             # Environment variables template
+├── .env                     # Environment variables (not in git)
+├── database.sqlite          # SQLite database file (not in git)
+├── drizzle.config.ts        # Drizzle ORM configuration
+├── tsconfig.json            # TypeScript configuration
+├── biome.json               # Biome linter and formatter config
+├── vitest.config.ts         # Vitest testing configuration
+└── package.json             # Dependencies and scripts
+```b.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml/badge.svg)](https://github.com/ChrisThompsonK/team2-job-app-backend/actions/workflows/code-quality.yml) [![Formatted with Biome](https://img.shields.io/badge/Formatted_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev/) 
 
 # Team 2 Job Roles Backend
 
@@ -84,14 +168,44 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **`npm run db:studio`**: Launch Drizzle Studio (database GUI)
 - **`npm run db:seed`**: Populate database with sample data
 
-## 🔧 Development
+## � Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
 
 ### Quick Start
-1. **Install Dependencies**: `npm install`
-2. **Setup Database**: `npm run db:push`
-3. **Seed Sample Data**: `npm run db:seed`
-4. **Start Development**: `npm run dev`
-5. **API Available**: `http://localhost:3000/api`
+
+1. **Clone and Install**:
+   ```bash
+   git clone <repository-url>
+   cd team2-job-app-backend
+   npm install
+   ```
+
+2. **Setup Environment Variables**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration if needed
+   ```
+
+3. **Setup Database**:
+   ```bash
+   npm run db:push      # Push schema to database
+   npm run db:seed      # Seed with sample data
+   ```
+
+4. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the API**:
+   - API: `http://localhost:3000/api`
+   - Health Check: `http://localhost:3000/health`
+
+## 🔧 Development
 
 ### Development Workflow
 1. **Development Mode**: Use `npm run dev` for fast development with tsx
