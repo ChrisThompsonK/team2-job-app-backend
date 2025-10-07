@@ -7,6 +7,7 @@ import express, {
 	type Request,
 	type Response,
 } from "express";
+import { config, isDevelopment, logConfiguration } from "./config/index";
 import apiRoutes from "./routes/index";
 
 interface AppConfig {
@@ -49,9 +50,23 @@ class App {
 
 		// API routes
 		this.server.use("/api", apiRoutes);
+
+		// Add environment info endpoint for debugging (development only)
+		if (isDevelopment()) {
+			this.server.get("/debug/config", (_req: Request, res: Response) => {
+				res.json({
+					config: this.config,
+					nodeVersion: process.version,
+					platform: process.platform,
+				});
+			});
+		}
 	}
 
 	public start(): void {
+		// Log configuration on startup
+		logConfiguration();
+
 		this.server.listen(this.config.port, () => {
 			console.log(`🚀 Starting ${this.config.name} v${this.config.version}`);
 			console.log(`📦 Environment: ${this.config.environment}`);
@@ -73,10 +88,10 @@ class App {
 
 // Application configuration
 const appConfig: AppConfig = {
-	name: "team2-job-app-frontend",
-	version: "1.0.0",
-	environment: process.env["NODE_ENV"] ?? "development",
-	port: parseInt(process.env["PORT"] ?? "3000", 10),
+	name: config.app.name,
+	version: config.app.version,
+	environment: config.app.nodeEnv,
+	port: config.server.port,
 };
 
 // Initialize and start the application
