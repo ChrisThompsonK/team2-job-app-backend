@@ -77,6 +77,9 @@ class App {
 	}
 
 	public start(): void {
+		// Log configuration on startup
+		logConfiguration();
+
 		this.server.listen(this.config.port, () => {
 			console.log(`🚀 Starting ${this.config.name} v${this.config.version}`);
 			console.log(`📦 Environment: ${this.config.environment}`);

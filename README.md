@@ -114,6 +114,8 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 ## � Job Role API
 ```
 ├── src/
+│   ├── config/              # Application configuration
+│   │   └── index.ts         # Centralized config with env variables
 │   ├── controllers/          # API controllers for business logic
 │   │   └── jobRoleController.ts
 │   ├── db/                   # Database configuration and schema
@@ -129,6 +131,7 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 │   └── index.ts             # Main application entry point
 ├── drizzle/                 # Database migration files
 ├── dist/                    # Compiled JavaScript output
+├── .env.example             # Environment variables template
 ├── database.sqlite          # SQLite database file
 ├── package.json             # Project configuration
 ├── tsconfig.json           # TypeScript configuration
@@ -176,36 +179,53 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - npm or yarn
 
 ### Quick Start
-
-1. **Clone and Install**:
-   ```bash
-   git clone <repository-url>
-   cd team2-job-app-backend
-   npm install
-   ```
-
-2. **Setup Environment Variables**:
+1. **Install Dependencies**: `npm install`
+2. **Setup Environment**: Copy `.env.example` to `.env` and configure
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration if needed
    ```
+3. **Setup Database**: `npm run db:push`
+4. **Seed Sample Data**: `npm run db:seed`
+5. **Start Development**: `npm run dev`
+6. **API Available**: `http://localhost:3000/api`
 
-3. **Setup Database**:
-   ```bash
-   npm run db:push      # Push schema to database
-   npm run db:seed      # Seed with sample data
-   ```
+### Environment Configuration
 
-4. **Start Development Server**:
-   ```bash
-   npm run dev
-   ```
+This application uses environment variables for configuration. Create a `.env` file in the root directory by copying `.env.example`:
 
-5. **Access the API**:
-   - API: `http://localhost:3000/api`
-   - Health Check: `http://localhost:3000/health`
+```bash
+cp .env.example .env
+```
 
-## 🔧 Development
+#### Available Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `PORT` | Server port number | `3000` | No |
+| `HOST` | Server host address | `localhost` | No |
+| `NODE_ENV` | Environment mode (`development`, `production`, `test`) | `development` | No |
+| `APP_NAME` | Application name | `team2-job-app-backend` | No |
+| `APP_VERSION` | Application version | `1.0.0` | No |
+| `DATABASE_URL` | Path to SQLite database file | `./database.sqlite` | No |
+| `DEBUG` | Enable debug mode (`true`/`false`) | `false` | No |
+
+#### Configuration Best Practices
+
+- ✅ **Never commit `.env` files** - They are already in `.gitignore`
+- ✅ **Use `.env.example` as a template** - It documents all available variables
+- ✅ **Provide sensible defaults** - The app works without a `.env` file for local development
+- ✅ **Different configs per environment** - Use different values in dev, test, and production
+- ✅ **Platform-specific in production** - Use Heroku, Vercel, or AWS environment variable tools instead of `.env` files
+
+#### Debug Endpoint (Development Only)
+
+When running in development mode, a debug endpoint is available:
+
+```bash
+GET http://localhost:3000/debug/config
+```
+
+This returns the current configuration (useful for troubleshooting).
 
 ### Development Workflow
 1. **Development Mode**: Use `npm run dev` for fast development with tsx
