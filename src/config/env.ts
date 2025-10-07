@@ -30,7 +30,7 @@ function validateEnv(): EnvironmentVariables {
 		);
 	}
 
-	const port = Number.parseInt(process.env["PORT"] ?? "3000", 10);
+	const port = Number.parseInt(process.env["PORT"] ?? "8080", 10);
 	if (Number.isNaN(port) || port < 0 || port > 65535) {
 		throw new Error("PORT must be a valid number between 0 and 65535");
 	}
