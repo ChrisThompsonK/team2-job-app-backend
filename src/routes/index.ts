@@ -3,8 +3,8 @@ import jobRoleRoutes from "./jobRoleRoutes";
 
 const router = Router();
 
-// Job application routes
-router.use("/jobs", jobRoleRoutes);
+// Job roles routes
+router.use("/job-roles", jobRoleRoutes);
 
 // Health check route
 router.get("/health", (_req, res) => {
