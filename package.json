@@ -46,10 +46,18 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/connect-sqlite3": "^0.9.5",
+    "@types/cors": "^2.8.19",
+    "@types/express-session": "^1.18.2",
+    "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.4.1",
+    "connect-sqlite3": "^0.9.16",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.5",
     "drizzle-orm": "^0.44.6",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "express-session": "^1.18.2"
   }
 }
