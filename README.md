@@ -10,6 +10,7 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **TypeScript**: Full TypeScript support with strict type checking
 - **Express.js**: Fast, unopinionated web framework for Node.js
 - **Drizzle ORM**: Type-safe database ORM with SQLite
+- **CORS Support**: Configured for frontend integration
 - **ES Modules**: Modern JavaScript module system
 - **tsx**: Fast TypeScript execution for development
 - **Biome**: Ultra-fast formatter, linter, and code quality tools
@@ -26,6 +27,9 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **Database Migrations**: Version-controlled schema changes
 - **Data Seeding**: Sample data for development and testing
 - **Type Safety**: Full TypeScript integration with database operations
+
+### Future Enhancements
+> **Note**: Authentication will be added in the next sprint using [better-auth](https://www.better-auth.com/) - a modern, type-safe authentication library for TypeScript applications.
 
 ## � Job Role API
 ```
@@ -182,6 +186,7 @@ curl -X POST http://localhost:3000/api/jobs \
 - **Node.js**: Runtime environment
 - **TypeScript**: Type-safe JavaScript
 - **Express.js**: Fast, unopinionated web framework
+- **CORS**: Cross-Origin Resource Sharing support
 
 ### Database
 - **SQLite**: Lightweight, serverless database

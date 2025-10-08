@@ -2,29 +2,11 @@
 
 import { db } from "../db/index";
 import { jobRoles } from "../db/schema";
-import { userRepository } from "../repositories/userRepository";
 
 async function seedDatabase(): Promise<void> {
 	console.log("🌱 Starting database seeding...");
 
 	try {
-		// Create test users with hashed passwords
-		console.log("👥 Creating test users...");
-
-		const adminUser = await userRepository.create(
-			"admin@kainos.com",
-			"admin123",
-			true
-		);
-		console.log(`✅ Created admin user: ${adminUser.email}`);
-
-		const regularUser = await userRepository.create(
-			"user@kainos.com",
-			"user123",
-			false
-		);
-		console.log(`✅ Created regular user: ${regularUser.email}`);
-
 		// Create sample job roles
 		const now = new Date();
 

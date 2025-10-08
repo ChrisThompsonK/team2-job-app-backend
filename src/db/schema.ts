@@ -1,19 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-// Users table - represents users who can authenticate and access the system
-export const users = sqliteTable("users", {
-	id: integer("id").primaryKey({ autoIncrement: true }),
-	email: text("email").notNull().unique(),
-	password: text("password").notNull(),
-	isAdmin: integer("is_admin", { mode: "boolean" }).notNull().default(false),
-	createdAt: integer("created_at", { mode: "timestamp" })
-		.notNull()
-		.$defaultFn(() => new Date()),
-	updatedAt: integer("updated_at", { mode: "timestamp" })
-		.notNull()
-		.$defaultFn(() => new Date()),
-});
-
 // Job Roles table - represents available job roles that people can apply for
 export const jobRoles = sqliteTable("job_roles", {
 	id: integer("id").primaryKey(),

@@ -2,14 +2,12 @@
  * Main entry point for the Express application
  */
 
-import SQLiteStore from "connect-sqlite3";
 import cors from "cors";
 import express, {
 	type Application,
 	type Request,
 	type Response,
 } from "express";
-import session from "express-session";
 import { config, isDevelopment, logConfiguration } from "./config/index";
 import apiRoutes from "./routes/index";
 
@@ -47,28 +45,6 @@ class App {
 
 		// Add URL-encoded parsing middleware
 		this.server.use(express.urlencoded({ extended: true }));
-
-		// Session configuration
-		const SqliteStore = SQLiteStore(session);
-		this.server.use(
-			session({
-				store: new SqliteStore({
-					db: "sessions.sqlite",
-					dir: "./",
-				}) as session.Store,
-				secret:
-					process.env["SESSION_SECRET"] ||
-					"your-secret-key-change-in-production",
-				resave: false,
-				saveUninitialized: false,
-				cookie: {
-					secure: false, // Set to true in production with HTTPS
-					httpOnly: true,
-					maxAge: 24 * 60 * 60 * 1000, // 24 hours
-					sameSite: "lax",
-				},
-			})
-		);
 	}
 
 	private setupRoutes(): void {
