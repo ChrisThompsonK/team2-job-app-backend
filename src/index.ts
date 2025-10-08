@@ -2,6 +2,7 @@
  * Main entry point for the Express application
  */
 
+import cors from "cors";
 import express, {
 	type Application,
 	type Request,
@@ -29,6 +30,16 @@ class App {
 	}
 
 	private setupMiddleware(): void {
+		// CORS configuration - allow credentials from frontend
+		this.server.use(
+			cors({
+				origin: "http://localhost:3000",
+				credentials: true,
+				methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+				allowedHeaders: ["Content-Type", "Authorization"],
+			})
+		);
+
 		// Add JSON parsing middleware
 		this.server.use(express.json());
 
