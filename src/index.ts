@@ -8,6 +8,7 @@ import express, {
 	type Response,
 } from "express";
 import { env } from "./config/env";
+import { logConfiguration } from "./config/index";
 import apiRoutes from "./routes/index";
 
 interface AppConfig {
