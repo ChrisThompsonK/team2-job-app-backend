@@ -1,7 +1,7 @@
 {
-  "name": "team2-job-app-frontend",
+  "name": "team2-job-app-backend",
   "version": "1.0.0",
-  "description": "Modern Node.js TypeScript frontend application",
+  "description": "Modern Node.js TypeScript backend application",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
