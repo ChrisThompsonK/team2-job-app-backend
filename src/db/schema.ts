@@ -18,3 +18,27 @@ export const jobRoles = sqliteTable("job_roles", {
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
+
+// Users table - represents job applicants
+export const users = sqliteTable("users", {
+	id: integer("id").primaryKey(),
+	name: text("name").notNull(),
+	email: text("email").notNull().unique(),
+	role: text("role").notNull().default("user"),
+	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+
+// Job Applications table - represents individual job applications
+export const jobApplications = sqliteTable("job_applications", {
+	id: integer("id").primaryKey(),
+	jobRoleId: integer("job_role_id")
+		.notNull()
+		.references(() => jobRoles.id),
+	applicantName: text("applicant_name").notNull(),
+	applicantEmail: text("applicant_email").notNull(),
+	coverLetter: text("cover_letter"),
+	resumeUrl: text("resume_url"),
+	status: text("status").notNull().default("pending"),
+	submittedAt: integer("submitted_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
