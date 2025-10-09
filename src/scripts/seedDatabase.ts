@@ -51,7 +51,7 @@ async function seedDatabase(): Promise<void> {
 						"Develop responsive web applications, implement pixel-perfect UI designs, optimize application performance, collaborate with UX designers, write comprehensive unit tests, maintain component libraries.",
 					jobSpecLink:
 						"https://company.sharepoint.com/sites/hr/jobs/frontend-developer-derry",
-					location: "Derry/Londonderry, Northern Ireland",
+					location: "Derry~Londonderry, Northern Ireland",
 					capability: "Engineering",
 					band: "Mid",
 					closingDate: getRandomClosingDate(),
@@ -119,7 +119,7 @@ async function seedDatabase(): Promise<void> {
 						"Design cloud architecture solutions, manage Kubernetes clusters, implement Infrastructure as Code, optimize system performance, ensure high availability, automate deployment processes, monitor system health.",
 					jobSpecLink:
 						"https://company.sharepoint.com/sites/hr/jobs/cloud-engineer-amsterdam",
-					location: "Amsterdam, Netherlands",
+					location: "Gdańsk, Poland",
 					capability: "Engineering",
 					band: "Senior",
 					closingDate: getRandomClosingDate(),
@@ -136,7 +136,7 @@ async function seedDatabase(): Promise<void> {
 						"Monitor security systems, investigate security incidents, implement security policies, conduct vulnerability assessments, manage security tools, collaborate with compliance teams, provide security training.",
 					jobSpecLink:
 						"https://company.sharepoint.com/sites/hr/jobs/security-analyst-frankfurt",
-					location: "Frankfurt, Germany",
+					location: "Antwerp, Belgium",
 					capability: "Security",
 					band: "Mid",
 					closingDate: getRandomClosingDate(),
