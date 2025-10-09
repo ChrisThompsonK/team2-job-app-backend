@@ -5,6 +5,7 @@ import type {
 	CreateJobRoleRequest,
 	JobRoleResponse,
 	JobRolesQuery,
+	UpdateJobRoleRequest,
 } from "../types/jobRole";
 
 /**
@@ -184,6 +185,87 @@ export async function createJobRole(
 		});
 	} catch (error) {
 		console.error("Error creating job role:", error);
+		res.status(500).json({
+			success: false,
+			error: "Internal server error",
+		});
+	}
+}
+
+/**
+ * Update an existing job role
+ */
+export async function updateJobRole(
+	req: Request<{ id: string }, unknown, UpdateJobRoleRequest>,
+	res: Response<ApiResponse<JobRoleResponse>>
+): Promise<void> {
+	try {
+		const { id } = req.params;
+		const jobId = Number.parseInt(id, 10);
+
+		if (Number.isNaN(jobId)) {
+			res.status(400).json({
+				success: false,
+				error: "Invalid job role ID",
+			});
+			return;
+		}
+
+		const requestData = req.body;
+
+		// Build update data
+		const updateData: Partial<
+			Omit<
+				JobRoleResponse,
+				"id" | "createdAt" | "updatedAt" | "closingDate"
+			> & { closingDate: Date }
+		> = {};
+
+		if (requestData.jobRoleName)
+			updateData.jobRoleName = requestData.jobRoleName;
+		if (requestData.description)
+			updateData.description = requestData.description;
+		if (requestData.responsibilities)
+			updateData.responsibilities = requestData.responsibilities;
+		if (requestData.jobSpecLink)
+			updateData.jobSpecLink = requestData.jobSpecLink;
+		if (requestData.location) updateData.location = requestData.location;
+		if (requestData.capability) updateData.capability = requestData.capability;
+		if (requestData.band) updateData.band = requestData.band;
+		if (requestData.status) updateData.status = requestData.status;
+		if (requestData.numberOfOpenPositions !== undefined)
+			updateData.numberOfOpenPositions = requestData.numberOfOpenPositions;
+		if (requestData.closingDate)
+			updateData.closingDate = new Date(requestData.closingDate);
+
+		const updatedJobRole = await jobRoleRepository.updateJobRole(
+			jobId,
+			updateData
+		);
+
+		if (!updatedJobRole) {
+			res.status(404).json({
+				success: false,
+				error: "Job role not found",
+			});
+			return;
+		}
+
+		// Format response
+		const formattedJobRole: JobRoleResponse = {
+			...updatedJobRole,
+			createdAt: new Date(updatedJobRole.createdAt).toISOString(),
+			updatedAt: new Date(updatedJobRole.updatedAt).toISOString(),
+			closingDate: new Date(updatedJobRole.closingDate).toISOString(),
+		};
+
+		res.json({
+			success: true,
+			data: formattedJobRole,
+			message: "Job role updated successfully",
+		});
+	} catch (error) {
+		console.error("Error updating job role:", error);
 		res.status(500).json({
 			success: false,
 			error: "Internal server error",

@@ -169,15 +169,20 @@ npm run format:fix  # Fix formatting issues
 curl http://localhost:3000/api/health
 
 # Get all job roles
-curl http://localhost:3000/api/jobs
+curl http://localhost:3000/api/job-roles
 
-# Get active jobs only
-curl http://localhost:3000/api/jobs/active
+# Get specific job role
+curl http://localhost:3000/api/job-roles/1
 
 # Create a new job role
-curl -X POST http://localhost:3000/api/jobs \
+curl -X POST http://localhost:3000/api/job-roles \
   -H "Content-Type: application/json" \
   -d '{"jobRoleName":"Test Job","description":"Test Description",...}'
+
+# Update an existing job role
+curl -X PUT http://localhost:3000/api/job-roles/1 \
+  -H "Content-Type: application/json" \
+  -d '{"status":"closed"}'
 ```
 
 ## 🏗️ Tech Stack
@@ -222,12 +227,10 @@ This API manages job roles with all required properties for a job portal:
 - **Number of Open Positions**: Available positions
 
 ### Available Endpoints
-- `GET /api/jobs` - Get all job roles (with filtering & pagination)
-- `GET /api/jobs/active` - Get only active job roles
-- `GET /api/jobs/:id` - Get specific job role
-- `POST /api/jobs` - Create new job role
-- `PUT /api/jobs/:id` - Update job role
-- `DELETE /api/jobs/:id` - Delete job role
+- `GET /api/job-roles` - Get all job roles (with filtering & pagination)
+- `GET /api/job-roles/:id` - Get specific job role
+- `POST /api/job-roles` - Create new job role
+- `PUT /api/job-roles/:id` - Update job role
 - `GET /api/health` - API health check
 
 ### Sample Job Roles

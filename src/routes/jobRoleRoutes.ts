@@ -3,6 +3,7 @@ import {
 	createJobRole,
 	getAllJobRoles,
 	getJobRoleById,
+	updateJobRole,
 } from "../controllers/jobRoleController";
 
 const router = Router();
@@ -15,5 +16,8 @@ router.get("/:id", getJobRoleById);
 
 // POST /api/job-roles - Create a new job role
 router.post("/", createJobRole);
+
+// PUT /api/job-roles/:id - Update an existing job role
+router.put("/:id", updateJobRole);
 
 export default router;
