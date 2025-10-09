@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { jobRoleRepository } from "../repositories/jobRoleRepository";
 import type {
 	ApiResponse,
+	CreateJobRoleRequest,
 	JobRoleResponse,
 	JobRolesQuery,
 } from "../types/jobRole";
@@ -134,6 +135,65 @@ export async function getActiveJobRoles(
 		});
 	} catch (error) {
 		console.error("Error getting active job applications:", error);
+		res.status(500).json({
+			success: false,
+			error: "Internal server error",
+		});
+	}
+}
+
+/**
+ * Create a new job role
+ */
+export async function createJobRole(
+	req: Request<Record<string, never>, unknown, CreateJobRoleRequest>,
+	res: Response<ApiResponse<JobRoleResponse>>
+): Promise<void> {
+	try {
+		const {
+			jobRoleName,
+			description,
+			responsibilities,
+			jobSpecLink,
+			location,
+			capability,
+			band,
+			closingDate,
+			numberOfOpenPositions = 1,
+		} = req.body;
+
+		// Convert ISO date string to Date object
+		const closingDateObj = new Date(closingDate);
+
+		// Create the job role
+		const newJobRole = await jobRoleRepository.createJobRole({
+			jobRoleName,
+			description,
+			responsibilities,
+			jobSpecLink,
+			location,
+			capability,
+			band,
+			closingDate: closingDateObj,
+			status: "active",
+			numberOfOpenPositions,
+		});
+
+		// Format response
+		const formattedJobRole: JobRoleResponse = {
+			...newJobRole,
+			createdAt: new Date(newJobRole.createdAt).toISOString(),
+			updatedAt: new Date(newJobRole.updatedAt).toISOString(),
+			closingDate: new Date(newJobRole.closingDate).toISOString(),
+		};
+
+		res.status(201).json({
+			success: true,
+			data: formattedJobRole,
+			message: "Job role created successfully",
+		});
+	} catch (error) {
+		console.error("Error creating job role:", error);
 		res.status(500).json({
 			success: false,
 			error: "Internal server error",

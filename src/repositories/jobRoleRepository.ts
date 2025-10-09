@@ -65,6 +65,61 @@ export class JobRoleRepository {
 			status: "active",
 		});
 	}
+
+	/**
+	 * Create a new job role
+	 */
+	async createJobRole(
+		data: Omit<JobRole, "id" | "createdAt" | "updatedAt">
+	): Promise<JobRole> {
+		const now = new Date();
+		const result = await db
+			.insert(jobRoles)
+			.values({
+				...data,
+				createdAt: now,
+				updatedAt: now,
+			})
+			.returning();
+
+		if (!result[0]) {
+			throw new Error("Failed to create job role");
+		}
+
+		return result[0];
+	}
+
+	/**
+	 * Update an existing job role
+	 */
+	async updateJobRole(
+		id: number,
+		data: Partial<Omit<JobRole, "id" | "createdAt" | "updatedAt">>
+	): Promise<JobRole | null> {
+		const now = new Date();
+		const result = await db
+			.update(jobRoles)
+			.set({
+				...data,
+				updatedAt: now,
+			})
+			.where(eq(jobRoles.id, id))
+			.returning();
+
+		return result[0] || null;
+	}
+
+	/**
+	 * Delete a job role
+	 */
+	async deleteJobRole(id: number): Promise<boolean> {
+		const result = await db
+			.delete(jobRoles)
+			.where(eq(jobRoles.id, id))
+			.returning();
+
+		return result.length > 0;
+	}
 }
 
 // Export a singleton instance
