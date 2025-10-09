@@ -110,7 +110,7 @@ export const config: Config = {
 		nodeEnv: process.env["NODE_ENV"] || "development",
 	},
 	server: {
-		port: parseInteger(process.env["PORT"], 3000, 1024, 65535),
+		port: parseInteger(process.env["PORT"], 8000, 1024, 65535),
 		host: process.env["HOST"] || "localhost",
 	},
 	database: {
