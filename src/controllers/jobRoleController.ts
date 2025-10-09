@@ -150,33 +150,23 @@ export async function createJobRole(
 	res: Response<ApiResponse<JobRoleResponse>>
 ): Promise<void> {
 	try {
-		const {
-			jobRoleName,
-			description,
-			responsibilities,
-			jobSpecLink,
-			location,
-			capability,
-			band,
-			closingDate,
-			numberOfOpenPositions = 1,
-		} = req.body;
+		const requestData = req.body;
 
 		// Convert ISO date string to Date object
-		const closingDateObj = new Date(closingDate);
+		const closingDateObj = new Date(requestData.closingDate);
 
 		// Create the job role
 		const newJobRole = await jobRoleRepository.createJobRole({
-			jobRoleName,
-			description,
-			responsibilities,
-			jobSpecLink,
-			location,
-			capability,
-			band,
+			jobRoleName: requestData.jobRoleName,
+			description: requestData.description,
+			responsibilities: requestData.responsibilities,
+			jobSpecLink: requestData.jobSpecLink,
+			location: requestData.location,
+			capability: requestData.capability,
+			band: requestData.band,
 			closingDate: closingDateObj,
 			status: "active",
-			numberOfOpenPositions,
+			numberOfOpenPositions: requestData.numberOfOpenPositions ?? 1,
 		});
 
 		// Format response
