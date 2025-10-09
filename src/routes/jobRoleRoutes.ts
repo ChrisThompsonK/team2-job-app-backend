@@ -1,9 +1,9 @@
 import { Router } from "express";
 import {
 	createJobRole,
+	deleteJobRole,
 	getAllJobRoles,
 	getJobRoleById,
-	deleteJobRole,
 } from "../controllers/jobRoleController";
 
 const router = Router();

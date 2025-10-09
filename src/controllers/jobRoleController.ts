@@ -3,10 +3,10 @@ import { jobRoleRepository } from "../repositories/jobRoleRepository";
 import type {
 	ApiResponse,
 	CreateJobRoleRequest,
+	JobRole,
 	JobRoleResponse,
 	JobRolesQuery,
 } from "../types/jobRole";
-import type { JobRole } from "../types/jobRole";
 
 /**
  * Get all job roles with optional filtering
@@ -121,15 +121,19 @@ export async function getActiveJobRoles(
 
 		// Filter out jobs that have passed closing date
 		const now = new Date();
-		const activeJobs = results.filter((job: JobRole) => new Date(job.closingDate) > now);
+		const activeJobs = results.filter(
+			(job: JobRole) => new Date(job.closingDate) > now
+		);
 
 		// Convert timestamps to ISO strings
-		const formattedResults: JobRoleResponse[] = activeJobs.map((job: JobRole) => ({
-			...job,
-			createdAt: new Date(job.createdAt).toISOString(),
-			updatedAt: new Date(job.updatedAt).toISOString(),
-			closingDate: new Date(job.closingDate).toISOString(),
-		}));
+		const formattedResults: JobRoleResponse[] = activeJobs.map(
+			(job: JobRole) => ({
+				...job,
+				createdAt: new Date(job.createdAt).toISOString(),
+				updatedAt: new Date(job.updatedAt).toISOString(),
+				closingDate: new Date(job.closingDate).toISOString(),
+			})
+		);
 		res.json({
 			success: true,
 			data: formattedResults,
