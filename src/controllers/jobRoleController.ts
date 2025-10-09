@@ -3,6 +3,7 @@ import { jobRoleRepository } from "../repositories/jobRoleRepository";
 import type {
 	ApiResponse,
 	CreateJobRoleRequest,
+	JobRole,
 	JobRoleResponse,
 	JobRolesQuery,
 	UpdateJobRoleRequest,
@@ -30,7 +31,7 @@ export async function getAllJobRoles(
 		const results = await jobRoleRepository.getAllJobRoles(filters);
 
 		// Convert timestamps to ISO strings
-		const formattedResults: JobRoleResponse[] = results.map((job) => ({
+		const formattedResults: JobRoleResponse[] = results.map((job: JobRole) => ({
 			...job,
 			createdAt: new Date(job.createdAt).toISOString(),
 			updatedAt: new Date(job.updatedAt).toISOString(),
@@ -121,15 +122,19 @@ export async function getActiveJobRoles(
 
 		// Filter out jobs that have passed closing date
 		const now = new Date();
-		const activeJobs = results.filter((job) => new Date(job.closingDate) > now);
+		const activeJobs = results.filter(
+			(job: JobRole) => new Date(job.closingDate) > now
+		);
 
 		// Convert timestamps to ISO strings
-		const formattedResults: JobRoleResponse[] = activeJobs.map((job) => ({
-			...job,
-			createdAt: new Date(job.createdAt).toISOString(),
-			updatedAt: new Date(job.updatedAt).toISOString(),
-			closingDate: new Date(job.closingDate).toISOString(),
-		}));
+		const formattedResults: JobRoleResponse[] = activeJobs.map(
+			(job: JobRole) => ({
+				...job,
+				createdAt: new Date(job.createdAt).toISOString(),
+				updatedAt: new Date(job.updatedAt).toISOString(),
+				closingDate: new Date(job.closingDate).toISOString(),
+			})
+		);
 		res.json({
 			success: true,
 			data: formattedResults,
@@ -269,6 +274,56 @@ export async function updateJobRole(
 		res.status(500).json({
 			success: false,
 			error: "Internal server error",
+		});
+	}
+}
+
+/**
+ * Delete a job role
+ */
+export async function deleteJobRole(
+	req: Request<{ id: string }>,
+	res: Response<ApiResponse<{ id: number }>>
+): Promise<void> {
+	try {
+		const { id } = req.params;
+		const jobId = Number.parseInt(id, 10);
+
+		if (Number.isNaN(jobId) || jobId <= 0) {
+			res.status(400).json({
+				success: false,
+				message: "Invalid job role ID provided",
+			});
+			return;
+		}
+
+		const existingJob = await jobRoleRepository.getJobRoleById(jobId);
+		if (!existingJob) {
+			res.status(404).json({
+				success: false,
+				message: "Job role not found",
+			});
+			return;
+		}
+
+		const deleted = await jobRoleRepository.deleteJobRole(jobId);
+		if (!deleted) {
+			res.status(500).json({
+				success: false,
+				message: "An error occurred while deleting the job role",
+			});
+			return;
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "Job role deleted successfully",
+		});
+	} catch (error) {
+		console.error("Error deleting job role:", error);
+		res.status(500).json({
+			success: false,
+			message: "An error occurred while deleting the job role",
 		});
 	}
 }

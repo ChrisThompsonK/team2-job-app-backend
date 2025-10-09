@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
 	createJobRole,
+	deleteJobRole,
 	getAllJobRoles,
 	getJobRoleById,
 	updateJobRole,
@@ -19,5 +20,8 @@ router.post("/", createJobRole);
 
 // PUT /api/job-roles/:id - Update an existing job role
 router.put("/:id", updateJobRole);
+
+// DELETE /api/job-roles/:id - Delete a job role
+router.delete("/:id", deleteJobRole);
 
 export default router;
