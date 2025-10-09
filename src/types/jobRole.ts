@@ -38,10 +38,37 @@ export interface JobRoleResponse
 	closingDate: string; // ISO date string
 }
 
-export interface CreateApplicationSubmissionRequest {
+export interface CreateApplicationRequest {
 	jobRoleId: number;
+	applicantName: string;
+	applicantEmail: string;
 	coverLetter?: string;
 	resumeUrl?: string;
+}
+
+export interface UpdateApplicationRequest {
+	status?: "pending" | "under_review" | "shortlisted" | "rejected" | "hired";
+	coverLetter?: string;
+	resumeUrl?: string;
+}
+
+export interface JobApplicationResponse {
+	id: number;
+	jobRoleId: number;
+	applicantName: string;
+	applicantEmail: string;
+	coverLetter?: string | undefined;
+	resumeUrl?: string | undefined;
+	status: string;
+	submittedAt: string; // ISO date string
+	updatedAt: string; // ISO date string
+	jobRole?: JobRoleResponse | undefined; // Include job role details when needed
+}
+
+export interface ApplicationsQuery {
+	status?: "pending" | "under_review" | "shortlisted" | "rejected" | "hired";
+	jobRoleId?: number;
+	applicantEmail?: string;
 }
 
 export interface JobRolesQuery {
