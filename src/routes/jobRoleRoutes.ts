@@ -3,6 +3,7 @@ import {
 	createJobRole,
 	getAllJobRoles,
 	getJobRoleById,
+	deleteJobRole,
 } from "../controllers/jobRoleController";
 
 const router = Router();
@@ -15,5 +16,8 @@ router.get("/:id", getJobRoleById);
 
 // POST /api/job-roles - Create a new job role
 router.post("/", createJobRole);
+
+// DELETE /api/job-roles/:id - Delete a job role
+router.delete("/:id", deleteJobRole);
 
 export default router;
