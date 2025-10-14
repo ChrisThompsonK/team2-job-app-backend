@@ -29,7 +29,7 @@ export async function getAllJobRoles(
 		if (!paginationValidation.valid) {
 			res.status(400).json({
 				success: false,
-				error: paginationValidation.error,
+				error: (paginationValidation as { valid: false; error: string }).error,
 			});
 			return;
 		}

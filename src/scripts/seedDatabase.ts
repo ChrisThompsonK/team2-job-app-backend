@@ -14,22 +14,9 @@ async function seedDatabase(): Promise<void> {
 		// Create sample job roles
 		const now = new Date();
 
-		// Helper function to generate random closing dates between 3-6 months from now
-		const getRandomClosingDate = () => {
-			const date = new Date();
-			const minMonths = 3;
-			const maxMonths = 6;
-			const randomMonths = Math.random() * (maxMonths - minMonths) + minMonths;
-			date.setMonth(date.getMonth() + randomMonths);
-			// Add random days within the month for more variation
-			const randomDays = Math.floor(Math.random() * 15) - 7; // ±7 days
-			date.setDate(date.getDate() + randomDays);
-			return date;
-		};
-
 		// Helper function to get random element from array
 		const getRandomItem = <T>(array: T[]): T => {
-			return array[Math.floor(Math.random() * array.length)];
+			return array[Math.floor(Math.random() * array.length)] as T;
 		};
 
 		// Define arrays for generating diverse job data
@@ -85,7 +72,7 @@ async function seedDatabase(): Promise<void> {
 		const statuses = ["active", "draft", "closed"];
 
 		// Base job titles by capability
-		const jobTitlesByCapability = {
+		const jobTitlesByCapability: Record<string, string[]> = {
 			Engineering: [
 				"Software Engineer",
 				"Frontend Developer",
@@ -189,29 +176,33 @@ async function seedDatabase(): Promise<void> {
 			const location = getRandomItem(locations);
 			const status = getRandomItem(statuses);
 			const baseTitle = getRandomItem(jobTitlesByCapability[capability]);
-			
+
 			// Add band prefix to title for Senior+ roles
-			const jobRoleName = ["Senior", "Lead", "Principal"].includes(band) 
+			const jobRoleName: string = ["Senior", "Lead", "Principal"].includes(band)
 				? `${band} ${baseTitle}`
 				: baseTitle;
 
 			// Generate varied closing dates
 			const baseDate = new Date();
-			baseDate.setMonth(baseDate.getMonth() + Math.floor(Math.random() * 6) + 1);
+			baseDate.setMonth(
+				baseDate.getMonth() + Math.floor(Math.random() * 6) + 1
+			);
 			baseDate.setDate(Math.floor(Math.random() * 28) + 1);
 
 			jobsToCreate.push({
 				jobRoleName,
-				description: `Join our ${location.split(',')[0]} team as a ${jobRoleName}. Work with cutting-edge technologies and contribute to innovative solutions that make a real impact.`,
+				description: `Join our ${location.split(",")[0]} team as a ${jobRoleName}. Work with cutting-edge technologies and contribute to innovative solutions that make a real impact.`,
 				responsibilities: `Lead projects and collaborate with cross-functional teams, contribute to technical decisions, mentor team members, ensure code quality and best practices, participate in agile development processes.`,
-				jobSpecLink: `https://company.sharepoint.com/sites/hr/jobs/${jobRoleName.toLowerCase().replace(/\s+/g, '-')}-${location.toLowerCase().split(',')[0].replace(/\s+/g, '-')}`,
+				jobSpecLink: `https://company.sharepoint.com/sites/hr/jobs/${jobRoleName.toLowerCase().replace(/\s+/g, "-")}-${location.toLowerCase().split(",")[0]?.replace(/\s+/g, "-")}`,
 				location,
 				capability,
 				band,
 				closingDate: baseDate,
 				status,
 				numberOfOpenPositions: Math.floor(Math.random() * 4) + 1,
-				createdAt: new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random created dates in last 30 days
+				createdAt: new Date(
+					now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000
+				), // Random created dates in last 30 days
 				updatedAt: now,
 			});
 		}
@@ -219,13 +210,10 @@ async function seedDatabase(): Promise<void> {
 		// Insert all jobs in batches to avoid potential issues with large inserts
 		const batchSize = 25;
 		const allCreatedJobs = [];
-		
+
 		for (let i = 0; i < jobsToCreate.length; i += batchSize) {
 			const batch = jobsToCreate.slice(i, i + batchSize);
-			const createdBatch = await db
-				.insert(jobRoles)
-				.values(batch)
-				.returning();
+			const createdBatch = await db.insert(jobRoles).values(batch).returning();
 			allCreatedJobs.push(...createdBatch);
 		}
 
@@ -234,39 +222,50 @@ async function seedDatabase(): Promise<void> {
 
 		// Display summary statistics
 		console.log("\n📊 Job Role Statistics:");
-		
-		const statsByCapability = allCreatedJobs.reduce((acc, job) => {
-			acc[job.capability] = (acc[job.capability] || 0) + 1;
-			return acc;
-		}, {} as Record<string, number>);
-		
-		const statsByBand = allCreatedJobs.reduce((acc, job) => {
-			acc[job.band] = (acc[job.band] || 0) + 1;
-			return acc;
-		}, {} as Record<string, number>);
-		
-		const statsByStatus = allCreatedJobs.reduce((acc, job) => {
-			acc[job.status] = (acc[job.status] || 0) + 1;
-			return acc;
-		}, {} as Record<string, number>);
+
+		const statsByCapability = allCreatedJobs.reduce(
+			(acc, job) => {
+				acc[job.capability] = (acc[job.capability] || 0) + 1;
+				return acc;
+			},
+			{} as Record<string, number>
+		);
+
+		const statsByBand = allCreatedJobs.reduce(
+			(acc, job) => {
+				acc[job.band] = (acc[job.band] || 0) + 1;
+				return acc;
+			},
+			{} as Record<string, number>
+		);
+
+		const statsByStatus = allCreatedJobs.reduce(
+			(acc, job) => {
+				acc[job.status] = (acc[job.status] || 0) + 1;
+				return acc;
+			},
+			{} as Record<string, number>
+		);
 
 		console.log("\nBy Capability:");
 		for (const [capability, count] of Object.entries(statsByCapability)) {
 			console.log(`  ${capability}: ${count}`);
 		}
-		
+
 		console.log("\nBy Band:");
 		for (const [band, count] of Object.entries(statsByBand)) {
 			console.log(`  ${band}: ${count}`);
 		}
-		
+
 		console.log("\nBy Status:");
 		for (const [status, count] of Object.entries(statsByStatus)) {
 			console.log(`  ${status}: ${count}`);
 		}
 
 		console.log(`\n🔗 Test pagination at: /api/job-roles?page=1&limit=12`);
-		console.log(`📄 Total pages with limit 12: ${Math.ceil(allCreatedJobs.length / 12)}`);
+		console.log(
+			`📄 Total pages with limit 12: ${Math.ceil(allCreatedJobs.length / 12)}`
+		);
 	} catch (error) {
 		console.error("❌ Error seeding database:", error);
 		process.exit(1);
