@@ -49,6 +49,28 @@ export interface JobRolesQuery {
 	capability?: string;
 	location?: string;
 	band?: string;
+	page?: string;
+	limit?: string;
+}
+
+export interface PaginationMetadata {
+	currentPage: number;
+	totalPages: number;
+	totalCount: number;
+	limit: number;
+	hasNext: boolean;
+	hasPrevious: boolean;
+}
+
+export interface PaginatedJobRolesResponse {
+	jobRoles: JobRoleResponse[];
+	pagination: PaginationMetadata;
+}
+
+export interface PaginationParams {
+	page: number;
+	limit: number;
+	offset: number;
 }
 
 export interface ApiResponse<T> {
