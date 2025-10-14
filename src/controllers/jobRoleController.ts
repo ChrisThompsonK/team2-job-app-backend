@@ -6,18 +6,35 @@ import type {
 	JobRole,
 	JobRoleResponse,
 	JobRolesQuery,
+	PaginatedJobRolesResponse,
 	UpdateJobRoleRequest,
 } from "../types/jobRole";
+import {
+	calculatePaginationMetadata,
+	validatePaginationParams,
+} from "../utils/pagination";
 
 /**
- * Get all job roles with optional filtering
+ * Get all job roles with optional filtering and pagination
  */
 export async function getAllJobRoles(
 	req: Request<Record<string, never>, unknown, unknown, JobRolesQuery>,
-	res: Response<ApiResponse<JobRoleResponse[]>>
+	res: Response<ApiResponse<PaginatedJobRolesResponse>>
 ): Promise<void> {
 	try {
-		const { status, capability, location, band } = req.query;
+		const { status, capability, location, band, page, limit } = req.query;
+
+		// Validate pagination parameters
+		const paginationValidation = validatePaginationParams(page, limit);
+		if (!paginationValidation.valid) {
+			res.status(400).json({
+				success: false,
+				error: paginationValidation.error,
+			});
+			return;
+		}
+
+		const { params } = paginationValidation;
 
 		// Build filters
 		const filters = {
@@ -27,8 +44,15 @@ export async function getAllJobRoles(
 			...(band && { band }),
 		};
 
-		// Get all results
-		const results = await jobRoleRepository.getAllJobRoles(filters);
+		// Get total count for pagination metadata
+		const totalCount = await jobRoleRepository.getJobRolesCount(filters);
+
+		// Get paginated results
+		const results = await jobRoleRepository.getAllJobRoles({
+			...filters,
+			limit: params.limit,
+			offset: params.offset,
+		});
 
 		// Convert timestamps to ISO strings
 		const formattedResults: JobRoleResponse[] = results.map((job: JobRole) => ({
@@ -38,9 +62,19 @@ export async function getAllJobRoles(
 			closingDate: new Date(job.closingDate).toISOString(),
 		}));
 
+		// Calculate pagination metadata
+		const pagination = calculatePaginationMetadata(
+			totalCount,
+			params.page,
+			params.limit
+		);
+
 		res.json({
 			success: true,
-			data: formattedResults,
+			data: {
+				jobRoles: formattedResults,
+				pagination,
+			},
 		});
 	} catch (error) {
 		console.error("Error getting job roles:", error);

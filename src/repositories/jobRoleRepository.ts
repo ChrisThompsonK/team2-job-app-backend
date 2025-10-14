@@ -1,17 +1,19 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "../db";
 import { jobRoles } from "../db/schema";
 import type { JobRole } from "../types/jobRole";
 
 export class JobRoleRepository {
 	/**
-	 * Get all job roles with optional filtering
+	 * Get all job roles with optional filtering and pagination
 	 */
 	async getAllJobRoles(options: {
 		status?: string;
 		capability?: string;
 		band?: string;
 		location?: string;
+		limit?: number;
+		offset?: number;
 	}): Promise<JobRole[]> {
 		// Build where conditions
 		const conditions = [];
@@ -30,13 +32,57 @@ export class JobRoleRepository {
 
 		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-		const query = db
+		// Build query with optional pagination
+		const baseQuery = db
 			.select()
 			.from(jobRoles)
 			.where(whereClause)
 			.orderBy(desc(jobRoles.createdAt));
 
-		return await query;
+		// Apply pagination if both limit and offset are provided
+		if (options.limit !== undefined && options.offset !== undefined) {
+			return await baseQuery.limit(options.limit).offset(options.offset);
+		}
+		// Apply only limit if provided
+		if (options.limit !== undefined) {
+			return await baseQuery.limit(options.limit);
+		}
+
+		return await baseQuery;
+	}
+
+	/**
+	 * Get total count of job roles with optional filtering
+	 */
+	async getJobRolesCount(options: {
+		status?: string;
+		capability?: string;
+		band?: string;
+		location?: string;
+	}): Promise<number> {
+		// Build where conditions
+		const conditions = [];
+		if (options.status) {
+			conditions.push(eq(jobRoles.status, options.status));
+		}
+		if (options.capability) {
+			conditions.push(eq(jobRoles.capability, options.capability));
+		}
+		if (options.band) {
+			conditions.push(eq(jobRoles.band, options.band));
+		}
+		if (options.location) {
+			conditions.push(eq(jobRoles.location, options.location));
+		}
+
+		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+		const result = await db
+			.select({ count: count() })
+			.from(jobRoles)
+			.where(whereClause);
+
+		return result[0]?.count || 0;
 	}
 
 	/**
