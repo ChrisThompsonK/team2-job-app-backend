@@ -60,8 +60,6 @@ export interface UpdateApplicationRequest {
 	resumeUrl?: string;
 }
 
-<<<<<<< HEAD
-=======
 export interface JobApplicationResponse {
 	id: number;
 	jobRoleId: number;
@@ -72,26 +70,6 @@ export interface JobApplicationResponse {
 	cvFileName?: string | undefined;
 	cvMimeType?: string | undefined;
 	hasCv?: boolean; // Indicates if CV data exists (without sending the full data)
-	status: string;
-	submittedAt: string; // ISO date string
-	updatedAt: string; // ISO date string
-	jobRole?: JobRoleResponse | undefined; // Include job role details when needed
-}
-
->>>>>>> main
-export interface JobApplicationResponse {
-	id: number;
-	jobRoleId: number;
-	applicantName: string;
-	applicantEmail: string;
-	coverLetter?: string | undefined;
-	resumeUrl?: string | undefined;
-<<<<<<< HEAD
-	cvFileName?: string | undefined;
-	cvMimeType?: string | undefined;
-	hasCv?: boolean; // Indicates if CV data exists (without sending the full data)
-=======
->>>>>>> main
 	status: string;
 	submittedAt: string; // ISO date string
 	updatedAt: string; // ISO date string

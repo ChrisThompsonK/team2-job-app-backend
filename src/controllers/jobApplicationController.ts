@@ -101,7 +101,6 @@ export async function createApplication(
 		console.log("Request body:", req.body);
 		console.log("Request file:", req.file);
 		console.log("Content-Type:", req.headers["content-type"]);
-		
 		const { jobRoleId, applicantName, applicantEmail, coverLetter, resumeUrl } =
 			req.body;
 
