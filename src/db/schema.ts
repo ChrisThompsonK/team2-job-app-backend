@@ -38,7 +38,10 @@ export const jobApplications = sqliteTable("job_applications", {
 	applicantEmail: text("applicant_email").notNull(),
 	coverLetter: text("cover_letter"),
 	resumeUrl: text("resume_url"),
-	status: text("status").notNull().default("pending"),
+	cvData: text("cv_data"), // Base64 encoded CV file data
+	cvFileName: text("cv_file_name"), // Original CV file name
+	cvMimeType: text("cv_mime_type"), // MIME type of the CV file
+	status: text("status").notNull().default("in progress"),
 	submittedAt: integer("submitted_at", { mode: "timestamp" }).notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });

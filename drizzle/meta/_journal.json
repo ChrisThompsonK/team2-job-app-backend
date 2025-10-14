@@ -15,6 +15,13 @@
       "when": 1760017048193,
       "tag": "0001_special_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760438960402,
+      "tag": "0002_naive_zuras",
+      "breakpoints": true
     }
   ]
 }

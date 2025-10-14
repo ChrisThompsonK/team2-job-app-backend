@@ -45,6 +45,9 @@ export class JobApplicationRepository {
 			applicantEmail: result.application.applicantEmail,
 			coverLetter: result.application.coverLetter || undefined,
 			resumeUrl: result.application.resumeUrl || undefined,
+			cvFileName: result.application.cvFileName || undefined,
+			cvMimeType: result.application.cvMimeType || undefined,
+			hasCv: !!result.application.cvData,
 			status: result.application.status,
 			submittedAt: new Date(result.application.submittedAt).toISOString(),
 			updatedAt: new Date(result.application.updatedAt).toISOString(),
@@ -93,6 +96,9 @@ export class JobApplicationRepository {
 			applicantEmail: application.applicantEmail,
 			coverLetter: application.coverLetter || undefined,
 			resumeUrl: application.resumeUrl || undefined,
+			cvFileName: application.cvFileName || undefined,
+			cvMimeType: application.cvMimeType || undefined,
+			hasCv: !!application.cvData,
 			status: application.status,
 			submittedAt: new Date(application.submittedAt).toISOString(),
 			updatedAt: new Date(application.updatedAt).toISOString(),
@@ -125,6 +131,9 @@ export class JobApplicationRepository {
 		applicantEmail: string;
 		coverLetter?: string;
 		resumeUrl?: string;
+		cvData?: string;
+		cvFileName?: string;
+		cvMimeType?: string;
 	}): Promise<JobApplicationResponse> {
 		const now = new Date();
 
@@ -136,7 +145,10 @@ export class JobApplicationRepository {
 				applicantEmail: applicationData.applicantEmail,
 				coverLetter: applicationData.coverLetter,
 				resumeUrl: applicationData.resumeUrl,
-				status: "pending",
+				cvData: applicationData.cvData,
+				cvFileName: applicationData.cvFileName,
+				cvMimeType: applicationData.cvMimeType,
+				status: "in progress",
 				submittedAt: now,
 				updatedAt: now,
 			})
@@ -154,6 +166,33 @@ export class JobApplicationRepository {
 		}
 
 		return createdApplication;
+	}
+
+	/**
+	 * Get CV data for a specific application
+	 */
+	async getCvData(id: number): Promise<{
+		cvData: string;
+		cvFileName: string;
+		cvMimeType: string;
+	} | null> {
+		const result = await db
+			.select({
+				cvData: jobApplications.cvData,
+				cvFileName: jobApplications.cvFileName,
+				cvMimeType: jobApplications.cvMimeType,
+			})
+			.from(jobApplications)
+			.where(eq(jobApplications.id, id))
+			.limit(1);
+
+		if (!result[0] || !result[0].cvData) return null;
+
+		return {
+			cvData: result[0].cvData,
+			cvFileName: result[0].cvFileName || "cv.pdf",
+			cvMimeType: result[0].cvMimeType || "application/pdf",
+		};
 	}
 
 	/**

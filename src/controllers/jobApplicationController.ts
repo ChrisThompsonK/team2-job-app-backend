@@ -93,14 +93,36 @@ export async function createApplication(
 	res: Response<ApiResponse<JobApplicationResponse>>
 ): Promise<void> {
 	try {
+		console.log("[createApplication] ENTRY: received application submission");
+		console.log("[createApplication] req.body:", req.body);
+		console.log("[createApplication] req.file:", req.file);
+		console.log("[createApplication] req.headers:", req.headers);
+		console.log("=== DEBUG: Application submission received ===");
+		console.log("Request body:", req.body);
+		console.log("Request file:", req.file);
+		console.log("Content-Type:", req.headers["content-type"]);
+		
 		const { jobRoleId, applicantName, applicantEmail, coverLetter, resumeUrl } =
 			req.body;
+
+		// Get CV file if uploaded
+		const cvFile = (req as Express.Request & { file?: Express.Multer.File })
+			.file;
 
 		// Validate required fields
 		if (!jobRoleId || !applicantName || !applicantEmail) {
 			res.status(400).json({
 				success: false,
 				error: "Job role ID, applicant name, and email are required",
+			});
+			return;
+		}
+
+		// Validate CV file is provided
+		if (!cvFile) {
+			res.status(400).json({
+				success: false,
+				error: "CV file is required",
 			});
 			return;
 		}
@@ -125,11 +147,27 @@ export async function createApplication(
 			return;
 		}
 
-		// Check if job role is still accepting applications
-		if (jobRole.status !== "active") {
+		// Log the full jobRole object for debugging
+		console.log("[createApplication] jobRole fetched from DB:", jobRole);
+		// Check if job role is eligible (accept both 'active' and legacy 'open')
+		const eligibleStatuses = ["active", "open"];
+		if (!eligibleStatuses.includes((jobRole.status || "").toLowerCase())) {
+			console.warn("[createApplication] Ineligible job role status", {
+				jobRoleId: jobRole.id,
+				status: jobRole.status,
+				eligibleStatuses,
+			});
 			res.status(400).json({
 				success: false,
-				error: "This job role is no longer accepting applications",
+				error: "This job role is not currently accepting applications",
+			});
+			return;
+		}
+
+		if (jobRole.numberOfOpenPositions <= 0) {
+			res.status(400).json({
+				success: false,
+				error: "There are no open positions available for this job role",
 			});
 			return;
 		}
@@ -157,6 +195,9 @@ export async function createApplication(
 			return;
 		}
 
+		// Convert CV buffer to base64 string for storage
+		const cvBase64 = cvFile.buffer.toString("base64");
+
 		// Create the application
 		const applicationData: {
 			jobRoleId: number;
@@ -164,10 +205,16 @@ export async function createApplication(
 			applicantEmail: string;
 			coverLetter?: string;
 			resumeUrl?: string;
+			cvData: string;
+			cvFileName: string;
+			cvMimeType: string;
 		} = {
 			jobRoleId,
 			applicantName,
 			applicantEmail,
+			cvData: cvBase64,
+			cvFileName: cvFile.originalname,
+			cvMimeType: cvFile.mimetype,
 		};
 
 		if (coverLetter) {
@@ -218,6 +265,7 @@ export async function updateApplication(
 		// Validate status if provided
 		if (updates.status) {
 			const validStatuses = [
+				"in progress",
 				"pending",
 				"under_review",
 				"shortlisted",
@@ -341,6 +389,58 @@ export async function getApplicationsByJobRole(
 		});
 	} catch (error) {
 		console.error("Error getting applications for job role:", error);
+		res.status(500).json({
+			success: false,
+			error: "Internal server error",
+		});
+	}
+}
+
+/**
+ * Download CV for a specific application
+ */
+export async function downloadCv(
+	req: Request<{ id: string }>,
+	res: Response
+): Promise<void> {
+	try {
+		const { id } = req.params;
+		const applicationId = Number.parseInt(id, 10);
+
+		if (Number.isNaN(applicationId)) {
+			res.status(400).json({
+				success: false,
+				error: "Invalid application ID",
+			});
+			return;
+		}
+
+		// Get CV data from repository
+		const cvData = await jobApplicationRepository.getCvData(applicationId);
+
+		if (!cvData) {
+			res.status(404).json({
+				success: false,
+				error: "CV not found for this application",
+			});
+			return;
+		}
+
+		// Convert base64 back to buffer
+		const cvBuffer = Buffer.from(cvData.cvData, "base64");
+
+		// Set appropriate headers for file download
+		res.setHeader("Content-Type", cvData.cvMimeType);
+		res.setHeader(
+			"Content-Disposition",
+			`attachment; filename="${cvData.cvFileName}"`
+		);
+		res.setHeader("Content-Length", cvBuffer.length);
+
+		// Send the file
+		res.send(cvBuffer);
+	} catch (error) {
+		console.error("Error downloading CV:", error);
 		res.status(500).json({
 			success: false,
 			error: "Internal server error",

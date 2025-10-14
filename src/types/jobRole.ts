@@ -27,7 +27,7 @@ export interface UpdateJobRoleRequest {
 	capability?: string;
 	band?: string;
 	closingDate?: string; // ISO date string
-	status?: "active" | "closed" | "draft";
+	status?: "open" | "active" | "closed" | "draft";
 	numberOfOpenPositions?: number;
 }
 
@@ -44,10 +44,18 @@ export interface CreateApplicationRequest {
 	applicantEmail: string;
 	coverLetter?: string;
 	resumeUrl?: string;
+	cvFileName?: string;
+	cvMimeType?: string;
 }
 
 export interface UpdateApplicationRequest {
-	status?: "pending" | "under_review" | "shortlisted" | "rejected" | "hired";
+	status?:
+		| "in progress"
+		| "pending"
+		| "under_review"
+		| "shortlisted"
+		| "rejected"
+		| "hired";
 	coverLetter?: string;
 	resumeUrl?: string;
 }
@@ -59,6 +67,9 @@ export interface JobApplicationResponse {
 	applicantEmail: string;
 	coverLetter?: string | undefined;
 	resumeUrl?: string | undefined;
+	cvFileName?: string | undefined;
+	cvMimeType?: string | undefined;
+	hasCv?: boolean; // Indicates if CV data exists (without sending the full data)
 	status: string;
 	submittedAt: string; // ISO date string
 	updatedAt: string; // ISO date string
@@ -66,13 +77,19 @@ export interface JobApplicationResponse {
 }
 
 export interface ApplicationsQuery {
-	status?: "pending" | "under_review" | "shortlisted" | "rejected" | "hired";
+	status?:
+		| "in progress"
+		| "pending"
+		| "under_review"
+		| "shortlisted"
+		| "rejected"
+		| "hired";
 	jobRoleId?: number;
 	applicantEmail?: string;
 }
 
 export interface JobRolesQuery {
-	status?: "active" | "closed" | "draft";
+	status?: "open" | "active" | "closed" | "draft";
 	capability?: string;
 	location?: string;
 	band?: string;

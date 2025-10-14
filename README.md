@@ -14,6 +14,7 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **ES Modules**: Modern JavaScript module system
 - **tsx**: Fast TypeScript execution for development
 - **Biome**: Ultra-fast formatter, linter, and code quality tools
+- **Multer**: File upload middleware for handling CV attachments
 
 ### Job Role Management
 - **Complete CRUD Operations**: Create, Read, Update, Delete job roles
@@ -21,6 +22,14 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **Pagination Support**: Efficient handling of large datasets
 - **Data Validation**: Comprehensive input validation and error handling
 - **RESTful API Design**: Clean, intuitive API endpoints
+
+### Job Application Management
+- **CV Upload System**: Secure file upload with support for PDF, DOC, and DOCX formats
+- **Binary Storage**: CVs stored as base64-encoded data in SQLite database
+- **File Validation**: Automatic validation of file types and size limits (5MB max)
+- **Application Tracking**: Applications automatically set to "in progress" status on submission
+- **Eligibility Verification**: Validates open positions and job role status before accepting applications
+- **CV Download**: Retrieve uploaded CVs for review and processing
 
 ### Database Features
 - **SQLite Database**: Lightweight, serverless database
@@ -37,13 +46,20 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 │   ├── config/              # Application configuration
 │   │   └── index.ts         # Centralized config with env variables
 │   ├── controllers/          # API controllers for business logic
-│   │   └── jobRoleController.ts
+│   │   ├── jobRoleController.ts
+│   │   └── jobApplicationController.ts
 │   ├── db/                   # Database configuration and schema
 │   │   ├── index.ts         # Database connection setup
 │   │   └── schema.ts        # Drizzle schema definitions
+│   ├── middleware/          # Express middleware
+│   │   └── upload.ts        # Multer configuration for CV uploads
+│   ├── repositories/        # Data access layer
+│   │   ├── jobRoleRepository.ts
+│   │   └── jobApplicationRepository.ts
 │   ├── routes/              # Express route definitions
 │   │   ├── index.ts         # Main router
-│   │   └── jobRoleRoutes.ts
+│   │   ├── jobRoleRoutes.ts
+│   │   └── jobApplicationRoutes.ts
 │   ├── scripts/             # Utility scripts
 │   │   └── seedDatabase.ts  # Database seeding script
 │   ├── types/               # TypeScript type definitions
@@ -192,6 +208,7 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 - **TypeScript**: Type-safe JavaScript
 - **Express.js**: Fast, unopinionated web framework
 - **CORS**: Cross-Origin Resource Sharing support
+- **Multer**: Middleware for handling multipart/form-data (file uploads)
 
 ### Database
 - **SQLite**: Lightweight, serverless database
@@ -240,6 +257,40 @@ The database comes pre-seeded with sample jobs including:
 - UX Designer (Design, Birmingham)
 - Data Analyst (Analytics, Leeds)
 - DevOps Engineer (Engineering, Remote)
+
+### Job Applications API
+
+The application system allows users to apply for job roles with CV upload:
+
+#### Application Requirements
+- **Eligibility Check**: Only roles with status "active" and `numberOfOpenPositions > 0` accept applications
+- **CV Required**: All applications must include a CV file (PDF, DOC, or DOCX)
+- **File Size Limit**: Maximum CV file size is 5MB
+- **Status**: Applications are automatically set to "in progress" upon submission
+
+#### Application Endpoints
+- `POST /api/applications` - Submit job application with CV (multipart/form-data)
+- `GET /api/applications` - Get all applications (with filtering)
+- `GET /api/applications/:id` - Get specific application
+- `GET /api/applications/:id/cv` - Download application CV
+- `PUT /api/applications/:id` - Update application status
+- `DELETE /api/applications/:id` - Delete application
+- `GET /api/applications/job-role/:jobRoleId` - Get applications for specific job role
+
+#### Applying for a Job (multipart/form-data)
+```bash
+curl -X POST http://localhost:3000/api/applications \
+  -F "cv=@/path/to/resume.pdf" \
+  -F "jobRoleId=1" \
+  -F "applicantName=John Doe" \
+  -F "applicantEmail=john@example.com" \
+  -F "coverLetter=I am interested in this position..."
+```
+
+#### Download CV
+```bash
+curl http://localhost:3000/api/applications/1/cv --output cv.pdf
+```
 
 📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
 
