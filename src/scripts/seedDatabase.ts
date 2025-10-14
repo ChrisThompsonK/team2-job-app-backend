@@ -35,21 +35,22 @@ async function seedDatabase(): Promise<void> {
 			"Operations",
 		];
 
-	const locations = [
-		"Belfast, Northern Ireland",
-		"Birmingham, England",
-		"Derry~Londonderry, Northern Ireland",
-		"Dublin, Ireland",
-		"London, England",
-		"Gdansk, Poland",
-		"Helsinki, Finland",
-		"Paris, France",
-		"Antwerp, Belgium",
-		"Buenos Aires, Argentina",
-		"Indianapolis, United States",
-		"Nova Scotia, Canada",
-		"Toronto, Canada",
-	];		const bands = ["Junior", "Mid", "Senior", "Lead", "Principal"];
+		const locations = [
+			"Belfast, Northern Ireland",
+			"Birmingham, England",
+			"Derry~Londonderry, Northern Ireland",
+			"Dublin, Ireland",
+			"London, England",
+			"Gdansk, Poland",
+			"Helsinki, Finland",
+			"Paris, France",
+			"Antwerp, Belgium",
+			"Buenos Aires, Argentina",
+			"Indianapolis, United States",
+			"Nova Scotia, Canada",
+			"Toronto, Canada",
+		];
+		const bands = ["Junior", "Mid", "Senior", "Lead", "Principal"];
 		const statuses = ["active", "draft", "closed"];
 
 		// Base job titles by capability
