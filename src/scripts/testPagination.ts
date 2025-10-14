@@ -4,6 +4,45 @@
  * Run this after seeding the database and starting the server
  */
 
+// Types for API responses
+interface JobRole {
+	id: number;
+	jobRoleName: string;
+	description: string;
+	responsibilities: string;
+	jobSpecLink: string;
+	location: string;
+	capability: string;
+	band: string;
+	closingDate: string;
+	status: string;
+	numberOfOpenPositions: number;
+	createdAt: string;
+	updatedAt: string;
+}
+
+interface PaginationMetadata {
+	currentPage: number;
+	totalPages: number;
+	totalCount: number;
+	limit: number;
+	hasNext: boolean;
+	hasPrevious: boolean;
+}
+
+interface PaginatedResponse {
+	success: boolean;
+	data: {
+		jobRoles: JobRole[];
+		pagination: PaginationMetadata;
+	};
+}
+
+interface ErrorResponse {
+	success: boolean;
+	error: string;
+}
+
 async function testPagination() {
 	const baseUrl = "http://localhost:8000/api/job-roles";
 
@@ -13,7 +52,7 @@ async function testPagination() {
 	console.log("Test 1: Default pagination");
 	try {
 		const response1 = await fetch(baseUrl);
-		const data1 = (await response1.json()) as any;
+		const data1 = (await response1.json()) as PaginatedResponse;
 		console.log(`✅ Status: ${response1.status}`);
 		console.log(
 			`📄 Page: ${data1.data.pagination.currentPage}/${data1.data.pagination.totalPages}`
@@ -32,7 +71,7 @@ async function testPagination() {
 	console.log("Test 2: Page 2 with limit 5");
 	try {
 		const response2 = await fetch(`${baseUrl}?page=2&limit=5`);
-		const data2 = (await response2.json()) as any;
+		const data2 = (await response2.json()) as PaginatedResponse;
 		console.log(`✅ Status: ${response2.status}`);
 		console.log(
 			`📄 Page: ${data2.data.pagination.currentPage}/${data2.data.pagination.totalPages}`
@@ -51,7 +90,7 @@ async function testPagination() {
 	console.log("Test 3: Active jobs only, page 1, limit 3");
 	try {
 		const response3 = await fetch(`${baseUrl}?status=active&page=1&limit=3`);
-		const data3 = (await response3.json()) as any;
+		const data3 = (await response3.json()) as PaginatedResponse;
 		console.log(`✅ Status: ${response3.status}`);
 		console.log(
 			`📄 Page: ${data3.data.pagination.currentPage}/${data3.data.pagination.totalPages}`
@@ -70,7 +109,7 @@ async function testPagination() {
 	console.log("Test 4: Page beyond available data (page 999)");
 	try {
 		const response4 = await fetch(`${baseUrl}?page=999&limit=12`);
-		const data4 = (await response4.json()) as any;
+		const data4 = (await response4.json()) as PaginatedResponse;
 		console.log(`✅ Status: ${response4.status}`);
 		console.log(
 			`📄 Page: ${data4.data.pagination.currentPage}/${data4.data.pagination.totalPages}`
@@ -89,7 +128,7 @@ async function testPagination() {
 	console.log("Test 5: Invalid page parameter (page=0)");
 	try {
 		const response5 = await fetch(`${baseUrl}?page=0&limit=12`);
-		const data5 = (await response5.json()) as any;
+		const data5 = (await response5.json()) as ErrorResponse;
 		console.log(`⚠️  Status: ${response5.status}`);
 		console.log(`📋 Error: ${data5.error}\n`);
 	} catch (error) {
@@ -100,7 +139,7 @@ async function testPagination() {
 	console.log("Test 6: Invalid limit parameter (limit=101)");
 	try {
 		const response6 = await fetch(`${baseUrl}?page=1&limit=101`);
-		const data6 = (await response6.json()) as any;
+		const data6 = (await response6.json()) as ErrorResponse;
 		console.log(`⚠️  Status: ${response6.status}`);
 		console.log(`📋 Error: ${data6.error}\n`);
 	} catch (error) {
