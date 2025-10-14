@@ -5,6 +5,34 @@ import type { JobRole } from "../types/jobRole";
 
 export class JobRoleRepository {
 	/**
+	 * Helper method to build where conditions for filtering
+	 */
+	private buildWhereConditions(options: {
+		status?: string;
+		capability?: string;
+		band?: string;
+		location?: string;
+	}) {
+		const conditions = [];
+
+		const filterMap = {
+			status: jobRoles.status,
+			capability: jobRoles.capability,
+			band: jobRoles.band,
+			location: jobRoles.location,
+		} as const;
+
+		for (const [key, column] of Object.entries(filterMap)) {
+			const value = options[key as keyof typeof options];
+			if (value) {
+				conditions.push(eq(column, value));
+			}
+		}
+
+		return conditions.length > 0 ? and(...conditions) : undefined;
+	}
+
+	/**
 	 * Get all job roles with optional filtering and pagination
 	 */
 	async getAllJobRoles(options: {
@@ -15,22 +43,7 @@ export class JobRoleRepository {
 		limit?: number;
 		offset?: number;
 	}): Promise<JobRole[]> {
-		// Build where conditions
-		const conditions = [];
-		if (options.status) {
-			conditions.push(eq(jobRoles.status, options.status));
-		}
-		if (options.capability) {
-			conditions.push(eq(jobRoles.capability, options.capability));
-		}
-		if (options.band) {
-			conditions.push(eq(jobRoles.band, options.band));
-		}
-		if (options.location) {
-			conditions.push(eq(jobRoles.location, options.location));
-		}
-
-		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+		const whereClause = this.buildWhereConditions(options);
 
 		// Build query with optional pagination
 		const baseQuery = db
@@ -60,22 +73,7 @@ export class JobRoleRepository {
 		band?: string;
 		location?: string;
 	}): Promise<number> {
-		// Build where conditions
-		const conditions = [];
-		if (options.status) {
-			conditions.push(eq(jobRoles.status, options.status));
-		}
-		if (options.capability) {
-			conditions.push(eq(jobRoles.capability, options.capability));
-		}
-		if (options.band) {
-			conditions.push(eq(jobRoles.band, options.band));
-		}
-		if (options.location) {
-			conditions.push(eq(jobRoles.location, options.location));
-		}
-
-		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+		const whereClause = this.buildWhereConditions(options);
 
 		const result = await db
 			.select({ count: count() })
