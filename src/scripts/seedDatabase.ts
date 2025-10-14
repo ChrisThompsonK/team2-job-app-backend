@@ -175,7 +175,8 @@ async function seedDatabase(): Promise<void> {
 			const band = getRandomItem(bands);
 			const location = getRandomItem(locations);
 			const status = getRandomItem(statuses);
-			const baseTitle = getRandomItem(jobTitlesByCapability[capability]);
+			const titles = jobTitlesByCapability[capability];
+			const baseTitle = getRandomItem(titles || ["Software Engineer"]); // Fallback if capability not found
 
 			// Add band prefix to title for Senior+ roles
 			const jobRoleName: string = ["Senior", "Lead", "Principal"].includes(band)
