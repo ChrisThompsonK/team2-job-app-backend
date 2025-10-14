@@ -251,3 +251,203 @@ curl -X PUT "http://localhost:3000/api/jobs/1" \
   -H "Content-Type: application/json" \
   -d '{"closingDate": "2025-12-31T23:59:59.000Z"}'
 ```
+
+---
+
+## Job Applications API
+
+### Application Data Model
+A job application contains:
+- **id**: Unique identifier (auto-generated)
+- **jobRoleId**: ID of the job role being applied for
+- **applicantName**: Name of the applicant
+- **applicantEmail**: Email address of the applicant
+- **coverLetter**: Optional cover letter text
+- **resumeUrl**: Optional external resume URL
+- **cvFileName**: Name of the uploaded CV file
+- **cvMimeType**: MIME type of the CV file
+- **hasCv**: Boolean indicating if CV data exists
+- **status**: Application status (`in progress`, `pending`, `under_review`, `shortlisted`, `rejected`, `hired`)
+- **submittedAt**: Application submission timestamp
+- **updatedAt**: Last update timestamp
+- **jobRole**: Embedded job role details (when applicable)
+
+### 1. Submit Job Application (with CV Upload)
+```http
+POST /api/applications
+Content-Type: multipart/form-data
+```
+
+Submit a new job application with CV file upload.
+
+**Requirements:**
+- Job role must have status `"active"`
+- Job role must have `numberOfOpenPositions > 0`
+- CV file is required (PDF, DOC, or DOCX)
+- Maximum file size: 5MB
+- Applicant can only apply once per job role
+
+**Form Data Fields:**
+- `cv` (file, required): CV file to upload
+- `jobRoleId` (number, required): ID of the job role
+- `applicantName` (string, required): Name of applicant
+- `applicantEmail` (string, required): Valid email address
+- `coverLetter` (string, optional): Cover letter text
+- `resumeUrl` (string, optional): External resume URL
+
+**Example Request:**
+```bash
+curl -X POST "http://localhost:3000/api/applications" \
+  -F "cv=@/path/to/resume.pdf" \
+  -F "jobRoleId=1" \
+  -F "applicantName=Jane Smith" \
+  -F "applicantEmail=jane.smith@example.com" \
+  -F "coverLetter=I am very interested in this position because..."
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "jobRoleId": 1,
+    "applicantName": "Jane Smith",
+    "applicantEmail": "jane.smith@example.com",
+    "coverLetter": "I am very interested in this position because...",
+    "cvFileName": "resume.pdf",
+    "cvMimeType": "application/pdf",
+    "hasCv": true,
+    "status": "in progress",
+    "submittedAt": "2025-10-14T10:30:00.000Z",
+    "updatedAt": "2025-10-14T10:30:00.000Z"
+  },
+  "message": "Application submitted successfully"
+}
+```
+
+### 2. Get All Applications
+```http
+GET /api/applications
+```
+
+Retrieve all applications with optional filtering.
+
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `jobRoleId` (optional): Filter by job role ID
+- `applicantEmail` (optional): Filter by applicant email
+
+**Example Request:**
+```bash
+curl "http://localhost:3000/api/applications?status=in+progress&jobRoleId=1"
+```
+
+### 3. Get Application by ID
+```http
+GET /api/applications/:id
+```
+
+Retrieve a specific application by ID.
+
+**Example Request:**
+```bash
+curl "http://localhost:3000/api/applications/1"
+```
+
+### 4. Download Application CV
+```http
+GET /api/applications/:id/cv
+```
+
+Download the CV file for a specific application.
+
+**Example Request:**
+```bash
+# Download and save to file
+curl "http://localhost:3000/api/applications/1/cv" --output cv.pdf
+
+# View headers
+curl -I "http://localhost:3000/api/applications/1/cv"
+```
+
+**Response Headers:**
+```
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="resume.pdf"
+Content-Length: 245678
+```
+
+### 5. Update Application Status
+```http
+PUT /api/applications/:id
+```
+
+Update an application's status or other fields.
+
+**Request Body:**
+- `status` (optional): New status value
+- `coverLetter` (optional): Updated cover letter
+- `resumeUrl` (optional): Updated resume URL
+
+**Valid Status Values:**
+- `in progress`
+- `pending`
+- `under_review`
+- `shortlisted`
+- `rejected`
+- `hired`
+
+**Example Request:**
+```bash
+curl -X PUT "http://localhost:3000/api/applications/1" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "under_review"}'
+```
+
+### 6. Get Applications for Job Role
+```http
+GET /api/applications/job-role/:jobRoleId
+```
+
+Retrieve all applications for a specific job role.
+
+**Example Request:**
+```bash
+curl "http://localhost:3000/api/applications/job-role/1"
+```
+
+### 7. Delete Application
+```http
+DELETE /api/applications/:id
+```
+
+Delete a job application.
+
+**Example Request:**
+```bash
+curl -X DELETE "http://localhost:3000/api/applications/1"
+```
+
+## Application Workflow
+
+### For Applicants
+1. **Check Eligibility**: Ensure job role status is `"active"` and has open positions
+2. **Prepare CV**: File must be PDF, DOC, or DOCX (max 5MB)
+3. **Submit Application**: Use multipart/form-data POST request
+4. **Track Status**: Application starts as `"in progress"`
+
+### For Recruiters
+1. **Review Applications**: GET all applications for a job role
+2. **Download CVs**: Download CV files for review
+3. **Update Status**: Move applications through the hiring pipeline
+4. **Filter Applications**: Filter by status to manage workflow
+
+## Error Codes
+
+### Application-Specific Errors
+- `400` - CV file required / Invalid file type / File too large
+- `400` - Job role not accepting applications (not "open" or no positions)
+- `404` - Job role not found / Application not found
+- `409` - Already applied for this job role
+- `500` - Internal server error
