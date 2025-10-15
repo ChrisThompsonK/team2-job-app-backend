@@ -112,20 +112,28 @@ const appConfig: AppConfig = {
 // Initialize and start the application
 const app = new App(appConfig);
 
-// Handle uncaught exceptions
-process.on("uncaughtException", (error: Error) => {
-	console.error("❌ Uncaught Exception:", error);
+
+// Handle uncaught exceptions (avoid logging sensitive info)
+process.on("uncaughtException", (error: unknown) => {
+	if (error instanceof Error) {
+		console.error("❌ Uncaught Exception:", error.message);
+		if (error.stack) console.error(error.stack);
+	} else {
+		console.error("❌ Uncaught Exception: [non-Error thrown, redacted]");
+	}
 	process.exit(1);
 });
 
-// Handle unhandled promise rejections
-process.on(
-	"unhandledRejection",
-	(reason: unknown, promise: Promise<unknown>) => {
-		console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
-		process.exit(1);
+// Handle unhandled promise rejections (avoid logging sensitive info)
+process.on("unhandledRejection", (reason: unknown) => {
+	if (reason instanceof Error) {
+		console.error("❌ Unhandled Rejection:", reason.message);
+		if (reason.stack) console.error(reason.stack);
+	} else {
+		console.error("❌ Unhandled Rejection: [non-Error reason, redacted]");
 	}
-);
+	process.exit(1);
+});
 
 app.start();
 
