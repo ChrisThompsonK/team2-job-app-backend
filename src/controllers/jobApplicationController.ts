@@ -93,8 +93,6 @@ export async function createApplication(
 	res: Response<ApiResponse<JobApplicationResponse>>
 ): Promise<void> {
 	try {
-		// (Debug logging removed)
-
 		const { jobRoleId, applicantName, applicantEmail, coverLetter, resumeUrl } =
 			req.body;
 
