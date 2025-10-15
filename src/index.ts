@@ -8,7 +8,7 @@ import express, {
 	type Request,
 	type Response,
 } from "express";
-import { config, isDevelopment, logConfiguration } from "./config/index";
+import { config } from "./config/index";
 import apiRoutes from "./routes/index";
 
 interface AppConfig {
@@ -62,21 +62,11 @@ class App {
 		// API routes
 		this.server.use("/api", apiRoutes);
 
-		// Add environment info endpoint for debugging (development only)
-		if (isDevelopment()) {
-			this.server.get("/debug/config", (_req: Request, res: Response) => {
-				res.json({
-					config: this.config,
-					nodeVersion: process.version,
-					platform: process.platform,
-				});
-			});
-		}
+		// (Debug route removed)
 	}
 
 	public start(): void {
-		// Log configuration on startup
-		logConfiguration();
+		const server = this.server.listen(this.config.port);
 
 		this.server.listen(this.config.port, () => {
 			console.log(`🚀 Starting ${this.config.name} v${this.config.version}`);
@@ -85,6 +75,29 @@ class App {
 			console.log(
 				"✅ Application is running with TypeScript, ES Modules, and Express!"
 			);
+		});
+
+		// Handle server errors
+		server.on("error", (error: Error) => {
+			console.error("❌ Server error:", error);
+			process.exit(1);
+		});
+
+		// Graceful shutdown handlers
+		process.on("SIGTERM", () => {
+			console.log("⚠️  SIGTERM received, shutting down gracefully...");
+			server.close(() => {
+				console.log("✅ Server closed");
+				process.exit(0);
+			});
+		});
+
+		process.on("SIGINT", () => {
+			console.log("\n⚠️  SIGINT received, shutting down gracefully...");
+			server.close(() => {
+				console.log("✅ Server closed");
+				process.exit(0);
+			});
 		});
 	}
 
@@ -107,6 +120,29 @@ const appConfig: AppConfig = {
 
 // Initialize and start the application
 const app = new App(appConfig);
+
+// Handle uncaught exceptions (avoid logging sensitive info)
+process.on("uncaughtException", (error: unknown) => {
+	if (error instanceof Error) {
+		console.error("❌ Uncaught Exception:", error.message);
+		if (error.stack) console.error(error.stack);
+	} else {
+		console.error("❌ Uncaught Exception: [non-Error thrown, redacted]");
+	}
+	process.exit(1);
+});
+
+// Handle unhandled promise rejections (avoid logging sensitive info)
+process.on("unhandledRejection", (reason: unknown) => {
+	if (reason instanceof Error) {
+		console.error("❌ Unhandled Rejection:", reason.message);
+		if (reason.stack) console.error(reason.stack);
+	} else {
+		console.error("❌ Unhandled Rejection: [non-Error reason, redacted]");
+	}
+	process.exit(1);
+});
+
 app.start();
 
 export { App, type AppConfig };

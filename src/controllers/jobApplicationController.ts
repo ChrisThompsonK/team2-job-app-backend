@@ -141,6 +141,7 @@ export async function createApplication(
 		// Check if job role is eligible (accept both 'active' and legacy 'open')
 		const eligibleStatuses = ["active", "open"];
 		if (!eligibleStatuses.includes((jobRole.status || "").toLowerCase())) {
+			// Ineligible status; return validation error
 			res.status(400).json({
 				success: false,
 				error: "This job role is not currently accepting applications",

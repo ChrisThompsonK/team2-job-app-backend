@@ -117,6 +117,11 @@ export interface PaginationParams {
 	offset: number;
 }
 
+export interface JobRoleWithApplicationsResponse {
+	jobRole: JobRoleResponse;
+	applications: JobApplicationResponse[];
+}
+
 export interface ApiResponse<T> {
 	success: boolean;
 	data?: T;
