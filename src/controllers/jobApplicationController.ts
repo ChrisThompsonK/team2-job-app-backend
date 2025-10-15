@@ -6,8 +6,6 @@ import type {
 	ApplicationsQuery,
 	CreateApplicationRequest,
 	JobApplicationResponse,
-	JobRoleResponse,
-	JobRoleWithApplicationsResponse,
 	UpdateApplicationRequest,
 } from "../types/jobRole";
 
@@ -95,6 +93,15 @@ export async function createApplication(
 	res: Response<ApiResponse<JobApplicationResponse>>
 ): Promise<void> {
 	try {
+		console.log("[createApplication] ENTRY: received application submission");
+		console.log("[createApplication] req.body:", req.body);
+		console.log("[createApplication] req.file:", req.file);
+		console.log("[createApplication] req.headers:", req.headers);
+		console.log("=== DEBUG: Application submission received ===");
+		console.log("Request body:", req.body);
+		console.log("Request file:", req.file);
+		console.log("Content-Type:", req.headers["content-type"]);
+		
 		const { jobRoleId, applicantName, applicantEmail, coverLetter, resumeUrl } =
 			req.body;
 
@@ -140,9 +147,16 @@ export async function createApplication(
 			return;
 		}
 
+		// Log the full jobRole object for debugging
+		console.log("[createApplication] jobRole fetched from DB:", jobRole);
 		// Check if job role is eligible (accept both 'active' and legacy 'open')
 		const eligibleStatuses = ["active", "open"];
 		if (!eligibleStatuses.includes((jobRole.status || "").toLowerCase())) {
+			console.warn("[createApplication] Ineligible job role status", {
+				jobRoleId: jobRole.id,
+				status: jobRole.status,
+				eligibleStatuses,
+			});
 			res.status(400).json({
 				success: false,
 				error: "This job role is not currently accepting applications",
@@ -341,29 +355,12 @@ export async function deleteApplication(
  * Get applications for a specific job role
  */
 export async function getApplicationsByJobRole(
-	req: Request<{ jobRoleId?: string; id?: string }>,
-	res: Response<ApiResponse<JobRoleWithApplicationsResponse>>
+	req: Request<{ jobRoleId: string }>,
+	res: Response<ApiResponse<JobApplicationResponse[]>>
 ): Promise<void> {
 	try {
-		// Support both route parameters: :id (from job-roles route) and :jobRoleId (from applications route)
-		const jobRoleIdParam = req.params.id || req.params.jobRoleId;
-
-		console.log("[getApplicationsByJobRole] Request params:", req.params);
-		console.log(
-			"[getApplicationsByJobRole] Job role ID param:",
-			jobRoleIdParam
-		);
-
-		if (!jobRoleIdParam) {
-			console.error("[getApplicationsByJobRole] No job role ID provided");
-			res.status(400).json({
-				success: false,
-				error: "Job role ID is required",
-			});
-			return;
-		}
-
-		const jobId = Number.parseInt(jobRoleIdParam, 10);
+		const { jobRoleId } = req.params;
+		const jobId = Number.parseInt(jobRoleId, 10);
 
 		if (Number.isNaN(jobId)) {
 			res.status(400).json({
@@ -375,16 +372,7 @@ export async function getApplicationsByJobRole(
 
 		// Check if job role exists
 		const jobRole = await jobRoleRepository.getJobRoleById(jobId);
-		console.log(
-			"[getApplicationsByJobRole] Job role from DB:",
-			jobRole ? `Found: ${jobRole.jobRoleName}` : "Not found"
-		);
-
 		if (!jobRole) {
-			console.error(
-				"[getApplicationsByJobRole] Job role not found for ID:",
-				jobId
-			);
 			res.status(404).json({
 				success: false,
 				error: "Job role not found",
@@ -394,38 +382,10 @@ export async function getApplicationsByJobRole(
 
 		const applications =
 			await jobApplicationRepository.getApplicationsByJobRole(jobId);
-		console.log(
-			"[getApplicationsByJobRole] Found applications count:",
-			applications.length
-		);
 
-		// Format job role response
-		const jobRoleResponse: JobRoleResponse = {
-			...jobRole,
-			createdAt: new Date(jobRole.createdAt).toISOString(),
-			updatedAt: new Date(jobRole.updatedAt).toISOString(),
-			closingDate: new Date(jobRole.closingDate).toISOString(),
-		};
-
-		const responseData = {
-			jobRole: jobRoleResponse,
-			applications,
-		};
-
-		console.log(
-			"[getApplicationsByJobRole] Sending response:",
-			JSON.stringify({
-				success: true,
-				dataKeys: Object.keys(responseData),
-				jobRoleId: responseData.jobRole.id,
-				applicationsCount: responseData.applications.length,
-			})
-		);
-
-		// Return both job role and applications
 		res.json({
 			success: true,
-			data: responseData,
+			data: applications,
 		});
 	} catch (error) {
 		console.error("Error getting applications for job role:", error);

@@ -78,13 +78,36 @@ class App {
 		// Log configuration on startup
 		logConfiguration();
 
-		this.server.listen(this.config.port, () => {
+		const server = this.server.listen(this.config.port, () => {
 			console.log(`🚀 Starting ${this.config.name} v${this.config.version}`);
 			console.log(`📦 Environment: ${this.config.environment}`);
 			console.log(`🌐 Server running on http://localhost:${this.config.port}`);
 			console.log(
 				"✅ Application is running with TypeScript, ES Modules, and Express!"
 			);
+		});
+
+		// Handle server errors
+		server.on("error", (error: Error) => {
+			console.error("❌ Server error:", error);
+			process.exit(1);
+		});
+
+		// Graceful shutdown handlers
+		process.on("SIGTERM", () => {
+			console.log("⚠️  SIGTERM received, shutting down gracefully...");
+			server.close(() => {
+				console.log("✅ Server closed");
+				process.exit(0);
+			});
+		});
+
+		process.on("SIGINT", () => {
+			console.log("\n⚠️  SIGINT received, shutting down gracefully...");
+			server.close(() => {
+				console.log("✅ Server closed");
+				process.exit(0);
+			});
 		});
 	}
 
@@ -107,6 +130,22 @@ const appConfig: AppConfig = {
 
 // Initialize and start the application
 const app = new App(appConfig);
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (error: Error) => {
+	console.error("❌ Uncaught Exception:", error);
+	process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on(
+	"unhandledRejection",
+	(reason: unknown, promise: Promise<unknown>) => {
+		console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+		process.exit(1);
+	}
+);
+
 app.start();
 
 export { App, type AppConfig };
