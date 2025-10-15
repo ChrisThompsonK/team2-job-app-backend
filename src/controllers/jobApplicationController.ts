@@ -348,7 +348,14 @@ export async function getApplicationsByJobRole(
 		// Support both route parameters: :id (from job-roles route) and :jobRoleId (from applications route)
 		const jobRoleIdParam = req.params.id || req.params.jobRoleId;
 
+		console.log("[getApplicationsByJobRole] Request params:", req.params);
+		console.log(
+			"[getApplicationsByJobRole] Job role ID param:",
+			jobRoleIdParam
+		);
+
 		if (!jobRoleIdParam) {
+			console.error("[getApplicationsByJobRole] No job role ID provided");
 			res.status(400).json({
 				success: false,
 				error: "Job role ID is required",
@@ -368,7 +375,16 @@ export async function getApplicationsByJobRole(
 
 		// Check if job role exists
 		const jobRole = await jobRoleRepository.getJobRoleById(jobId);
+		console.log(
+			"[getApplicationsByJobRole] Job role from DB:",
+			jobRole ? `Found: ${jobRole.jobRoleName}` : "Not found"
+		);
+
 		if (!jobRole) {
+			console.error(
+				"[getApplicationsByJobRole] Job role not found for ID:",
+				jobId
+			);
 			res.status(404).json({
 				success: false,
 				error: "Job role not found",
@@ -378,6 +394,10 @@ export async function getApplicationsByJobRole(
 
 		const applications =
 			await jobApplicationRepository.getApplicationsByJobRole(jobId);
+		console.log(
+			"[getApplicationsByJobRole] Found applications count:",
+			applications.length
+		);
 
 		// Format job role response
 		const jobRoleResponse: JobRoleResponse = {
@@ -387,13 +407,25 @@ export async function getApplicationsByJobRole(
 			closingDate: new Date(jobRole.closingDate).toISOString(),
 		};
 
+		const responseData = {
+			jobRole: jobRoleResponse,
+			applications,
+		};
+
+		console.log(
+			"[getApplicationsByJobRole] Sending response:",
+			JSON.stringify({
+				success: true,
+				dataKeys: Object.keys(responseData),
+				jobRoleId: responseData.jobRole.id,
+				applicationsCount: responseData.applications.length,
+			})
+		);
+
 		// Return both job role and applications
 		res.json({
 			success: true,
-			data: {
-				jobRole: jobRoleResponse,
-				applications,
-			},
+			data: responseData,
 		});
 	} catch (error) {
 		console.error("Error getting applications for job role:", error);
