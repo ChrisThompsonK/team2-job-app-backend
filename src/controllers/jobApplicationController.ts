@@ -6,6 +6,8 @@ import type {
 	ApplicationsQuery,
 	CreateApplicationRequest,
 	JobApplicationResponse,
+	JobRoleResponse,
+	JobRoleWithApplicationsResponse,
 	UpdateApplicationRequest,
 } from "../types/jobRole";
 
@@ -339,12 +341,22 @@ export async function deleteApplication(
  * Get applications for a specific job role
  */
 export async function getApplicationsByJobRole(
-	req: Request<{ jobRoleId: string }>,
-	res: Response<ApiResponse<JobApplicationResponse[]>>
+	req: Request<{ jobRoleId?: string; id?: string }>,
+	res: Response<ApiResponse<JobRoleWithApplicationsResponse>>
 ): Promise<void> {
 	try {
-		const { jobRoleId } = req.params;
-		const jobId = Number.parseInt(jobRoleId, 10);
+		// Support both route parameters: :id (from job-roles route) and :jobRoleId (from applications route)
+		const jobRoleIdParam = req.params.id || req.params.jobRoleId;
+
+		if (!jobRoleIdParam) {
+			res.status(400).json({
+				success: false,
+				error: "Job role ID is required",
+			});
+			return;
+		}
+
+		const jobId = Number.parseInt(jobRoleIdParam, 10);
 
 		if (Number.isNaN(jobId)) {
 			res.status(400).json({
@@ -367,9 +379,21 @@ export async function getApplicationsByJobRole(
 		const applications =
 			await jobApplicationRepository.getApplicationsByJobRole(jobId);
 
+		// Format job role response
+		const jobRoleResponse: JobRoleResponse = {
+			...jobRole,
+			createdAt: new Date(jobRole.createdAt).toISOString(),
+			updatedAt: new Date(jobRole.updatedAt).toISOString(),
+			closingDate: new Date(jobRole.closingDate).toISOString(),
+		};
+
+		// Return both job role and applications
 		res.json({
 			success: true,
-			data: applications,
+			data: {
+				jobRole: jobRoleResponse,
+				applications,
+			},
 		});
 	} catch (error) {
 		console.error("Error getting applications for job role:", error);
