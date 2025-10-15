@@ -51,7 +51,7 @@ async function seedDatabase(): Promise<void> {
 			"Toronto, Canada",
 		];
 		const bands = ["Junior", "Mid", "Senior", "Lead", "Principal"];
-		const statuses = ["active", "draft", "closed"];
+		const statuses = ["Open", "Closed"];
 
 		// Base job titles by capability
 		const jobTitlesByCapability: Record<string, string[]> = {

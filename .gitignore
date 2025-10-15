@@ -159,3 +159,6 @@ database_backup.sqlite
 
 # Drizzle Studio
 .drizzle
+
+# Planning and specification documents (work in progress)
+src/spec/
