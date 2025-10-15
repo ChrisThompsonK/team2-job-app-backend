@@ -112,7 +112,6 @@ const appConfig: AppConfig = {
 // Initialize and start the application
 const app = new App(appConfig);
 
-
 // Handle uncaught exceptions (avoid logging sensitive info)
 process.on("uncaughtException", (error: unknown) => {
 	if (error instanceof Error) {
