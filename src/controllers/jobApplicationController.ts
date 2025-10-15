@@ -93,14 +93,7 @@ export async function createApplication(
 	res: Response<ApiResponse<JobApplicationResponse>>
 ): Promise<void> {
 	try {
-		console.log("[createApplication] ENTRY: received application submission");
-		console.log("[createApplication] req.body:", req.body);
-		console.log("[createApplication] req.file:", req.file);
-		console.log("[createApplication] req.headers:", req.headers);
-		console.log("=== DEBUG: Application submission received ===");
-		console.log("Request body:", req.body);
-		console.log("Request file:", req.file);
-		console.log("Content-Type:", req.headers["content-type"]);
+		// (Debug logging removed)
 
 		const { jobRoleId, applicantName, applicantEmail, coverLetter, resumeUrl } =
 			req.body;
@@ -147,16 +140,10 @@ export async function createApplication(
 			return;
 		}
 
-		// Log the full jobRole object for debugging
-		console.log("[createApplication] jobRole fetched from DB:", jobRole);
 		// Check if job role is eligible (accept both 'active' and legacy 'open')
 		const eligibleStatuses = ["active", "open"];
 		if (!eligibleStatuses.includes((jobRole.status || "").toLowerCase())) {
-			console.warn("[createApplication] Ineligible job role status", {
-				jobRoleId: jobRole.id,
-				status: jobRole.status,
-				eligibleStatuses,
-			});
+			// Ineligible status; return validation error
 			res.status(400).json({
 				success: false,
 				error: "This job role is not currently accepting applications",

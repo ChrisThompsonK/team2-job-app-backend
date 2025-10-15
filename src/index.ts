@@ -8,7 +8,7 @@ import express, {
 	type Request,
 	type Response,
 } from "express";
-import { config, isDevelopment, logConfiguration } from "./config/index";
+import { config } from "./config/index";
 import apiRoutes from "./routes/index";
 
 interface AppConfig {
@@ -62,30 +62,11 @@ class App {
 		// API routes
 		this.server.use("/api", apiRoutes);
 
-		// Add environment info endpoint for debugging (development only)
-		if (isDevelopment()) {
-			this.server.get("/debug/config", (_req: Request, res: Response) => {
-				res.json({
-					config: this.config,
-					nodeVersion: process.version,
-					platform: process.platform,
-				});
-			});
-		}
+		// (Debug route removed)
 	}
 
 	public start(): void {
-		// Log configuration on startup
-		logConfiguration();
-
-		const server = this.server.listen(this.config.port, () => {
-			console.log(`🚀 Starting ${this.config.name} v${this.config.version}`);
-			console.log(`📦 Environment: ${this.config.environment}`);
-			console.log(`🌐 Server running on http://localhost:${this.config.port}`);
-			console.log(
-				"✅ Application is running with TypeScript, ES Modules, and Express!"
-			);
-		});
+		const server = this.server.listen(this.config.port);
 
 		// Handle server errors
 		server.on("error", (error: Error) => {
