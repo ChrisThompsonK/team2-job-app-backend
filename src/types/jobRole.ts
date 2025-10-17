@@ -97,6 +97,16 @@ export interface JobRolesQuery {
 	limit?: string;
 }
 
+export interface SearchJobRolesQuery {
+	search?: string;
+	capability?: string;
+	location?: string;
+	band?: string;
+	status?: string;
+	page?: string;
+	limit?: string;
+}
+
 export interface PaginationMetadata {
 	currentPage: number;
 	totalPages: number;

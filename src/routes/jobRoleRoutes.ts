@@ -4,7 +4,11 @@ import {
 	createJobRole,
 	deleteJobRole,
 	getAllJobRoles,
+	getBands,
+	getCapabilities,
 	getJobRoleById,
+	getLocations,
+	searchJobRoles,
 	updateJobRole,
 } from "../controllers/jobRoleController";
 
@@ -12,6 +16,19 @@ const router = Router();
 
 // GET /api/job-roles - Get all job roles
 router.get("/", getAllJobRoles);
+
+// GET /api/job-roles/search - Search and filter job roles
+// Note: This must come before /:id to avoid route conflicts
+router.get("/search", searchJobRoles);
+
+// GET /api/job-roles/capabilities - Get distinct capabilities
+router.get("/capabilities", getCapabilities);
+
+// GET /api/job-roles/locations - Get distinct locations
+router.get("/locations", getLocations);
+
+// GET /api/job-roles/bands - Get distinct bands
+router.get("/bands", getBands);
 
 // GET /api/job-roles/:id/applicants - Get applicants for a specific job role
 // Note: This must come before /:id to avoid route conflicts
