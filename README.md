@@ -18,8 +18,10 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ### Job Role Management
 - **Complete CRUD Operations**: Create, Read, Update, Delete job roles
+- **Advanced Search & Filtering**: Full-text search on job role names with multi-criteria filtering
+- **Filter Options API**: Dynamic retrieval of available capabilities, locations, and bands
 - **Advanced Filtering**: Filter by status, capability, location, and band
-- **Pagination Support**: Efficient handling of large datasets
+- **Pagination Support**: Efficient handling of large datasets with configurable page sizes
 - **Data Validation**: Comprehensive input validation and error handling
 - **RESTful API Design**: Clean, intuitive API endpoints
 
@@ -187,6 +189,23 @@ curl http://localhost:3000/api/health
 # Get all job roles
 curl http://localhost:3000/api/job-roles
 
+# Search job roles by name
+curl "http://localhost:3000/api/job-roles/search?search=engineer"
+
+# Filter by status (Open positions only)
+curl "http://localhost:3000/api/job-roles/search?status=Open"
+
+# Search with status filter
+curl "http://localhost:3000/api/job-roles/search?search=developer&status=Open"
+
+# Search with multiple filters
+curl "http://localhost:3000/api/job-roles/search?search=senior&capability=Engineering&location=Dublin,%20Ireland&band=Senior&status=Open"
+
+# Get filter options for search form
+curl http://localhost:3000/api/job-roles/capabilities
+curl http://localhost:3000/api/job-roles/locations
+curl http://localhost:3000/api/job-roles/bands
+
 # Get specific job role
 curl http://localhost:3000/api/job-roles/1
 
@@ -244,10 +263,19 @@ This API manages job roles with all required properties for a job portal:
 - **Number of Open Positions**: Available positions
 
 ### Available Endpoints
+
+#### Job Role Endpoints
 - `GET /api/job-roles` - Get all job roles (with filtering & pagination)
+- `GET /api/job-roles/search` - Search and filter job roles with advanced criteria
+- `GET /api/job-roles/capabilities` - Get list of distinct capabilities
+- `GET /api/job-roles/locations` - Get list of distinct locations
+- `GET /api/job-roles/bands` - Get list of distinct bands
 - `GET /api/job-roles/:id` - Get specific job role
 - `POST /api/job-roles` - Create new job role
 - `PUT /api/job-roles/:id` - Update job role
+- `DELETE /api/job-roles/:id` - Delete job role
+
+#### System Endpoints
 - `GET /api/health` - API health check
 
 ### Sample Job Roles

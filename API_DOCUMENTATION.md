@@ -79,7 +79,192 @@ curl "http://localhost:3000/api/jobs?status=active&capability=Engineering&page=1
 }
 ```
 
-### 2. Get Active Job Roles
+### 2. Search Job Roles
+```http
+GET /api/job-roles/search
+```
+
+Search and filter job roles with pagination support. All parameters are optional.
+
+**Query Parameters:**
+- `search` (optional): Case-insensitive partial match on job role name (max 200 characters)
+- `capability` (optional): Exact match on capability field
+- `location` (optional): Exact match on location field
+- `band` (optional): Exact match on band field
+- `status` (optional): Case-insensitive exact match on status field (e.g., "Open", "Closed")
+- `page` (optional): Page number (starts at 1, default: 1)
+- `limit` (optional): Items per page (default: 12, max: 100)
+
+**Filter Logic:**
+- All provided filters use AND logic (all must match)
+- Search parameter performs case-insensitive partial matching on `jobRoleName` only
+- Status parameter performs case-insensitive exact match on `status` field
+- Empty/missing parameters are ignored
+
+**Example Requests:**
+```bash
+# Basic search
+curl "http://localhost:8000/api/job-roles/search?search=engineer"
+
+# Filter by status only (Open positions)
+curl "http://localhost:8000/api/job-roles/search?status=Open"
+
+# Search with status filter
+curl "http://localhost:8000/api/job-roles/search?search=developer&status=Open"
+
+# Search with multiple filters
+curl "http://localhost:8000/api/job-roles/search?search=senior&capability=Engineering&location=Belfast,%20Northern%20Ireland&band=Senior&status=Open&page=1&limit=12"
+
+# Filter without search
+curl "http://localhost:8000/api/job-roles/search?capability=Engineering&band=Senior&status=Open"
+
+# Pagination with search
+curl "http://localhost:8000/api/job-roles/search?search=developer&page=2&limit=12"
+```
+
+**Example Success Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "jobRoles": [
+      {
+        "id": 1,
+        "jobRoleName": "Senior Software Engineer",
+        "description": "...",
+        "responsibilities": "...",
+        "jobSpecLink": "https://...",
+        "location": "Belfast, Northern Ireland",
+        "capability": "Engineering",
+        "band": "Senior",
+        "closingDate": "2025-12-31T23:59:59.000Z",
+        "status": "Open",
+        "numberOfOpenPositions": 3,
+        "createdAt": "2025-10-03T12:00:00.000Z",
+        "updatedAt": "2025-10-03T12:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalCount": 58,
+      "limit": 12,
+      "hasNext": true,
+      "hasPrevious": false
+    }
+  }
+}
+```
+
+**Example Empty Results Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "jobRoles": [],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 0,
+      "totalCount": 0,
+      "limit": 12,
+      "hasNext": false,
+      "hasPrevious": false
+    }
+  }
+}
+```
+
+**Error Responses:**
+```json
+// Invalid pagination
+{
+  "success": false,
+  "error": "Invalid page number. Must be a positive integer."
+}
+
+// Search term too long
+{
+  "success": false,
+  "error": "Search term must be 200 characters or less"
+}
+
+// Server error
+{
+  "success": false,
+  "error": "An error occurred while searching job roles."
+}
+```
+
+### 3. Get Filter Options
+
+#### Get Capabilities
+```http
+GET /api/job-roles/capabilities
+```
+
+Returns list of unique capabilities from all job roles.
+
+**Example Request:**
+```bash
+curl "http://localhost:8000/api/job-roles/capabilities"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": ["Engineering", "Analytics", "Product", "Design", "Quality Assurance", "Documentation", "Testing"]
+}
+```
+
+#### Get Locations
+```http
+GET /api/job-roles/locations
+```
+
+Returns list of unique locations from all job roles.
+
+**Example Request:**
+```bash
+curl "http://localhost:8000/api/job-roles/locations"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": [
+    "Belfast, Northern Ireland",
+    "Birmingham, England",
+    "Derry~Londonderry, Northern Ireland",
+    "Dublin, Ireland",
+    "London, England",
+    "Remote"
+  ]
+}
+```
+
+#### Get Bands
+```http
+GET /api/job-roles/bands
+```
+
+Returns list of unique bands from all job roles.
+
+**Example Request:**
+```bash
+curl "http://localhost:8000/api/job-roles/bands"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": ["Junior", "Mid", "Senior", "Lead", "Principal"]
+}
+```
+
+### 4. Get Active Job Roles
 ```http
 GET /api/jobs/active
 ```
@@ -93,7 +278,7 @@ Retrieve only active job roles (status = 'active' and closing date in the future
 - `location` (optional): Filter by location (partial match)
 - `band` (optional): Filter by band (exact match)
 
-### 3. Get Job Role by ID
+### 5. Get Job Role by ID
 ```http
 GET /api/jobs/:id
 ```
@@ -105,7 +290,7 @@ Retrieve a specific job role by its ID.
 curl "http://localhost:3000/api/jobs/1"
 ```
 
-### 4. Create Job Role
+### 6. Create Job Role
 ```http
 POST /api/jobs
 ```
@@ -144,7 +329,7 @@ curl -X POST "http://localhost:3000/api/jobs" \
   }'
 ```
 
-### 5. Update Job Role
+### 7. Update Job Role
 ```http
 PUT /api/jobs/:id
 ```
@@ -160,7 +345,7 @@ Update an existing job role. Only provided fields will be updated.
 }
 ```
 
-### 6. Delete Job Role
+### 8. Delete Job Role
 ```http
 DELETE /api/jobs/:id
 ```
