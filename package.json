@@ -36,6 +36,7 @@
   "license": "ISC",
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
+    "@types/argon2": "^0.14.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -48,6 +49,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "argon2": "^0.44.0",
     "better-sqlite3": "^12.4.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

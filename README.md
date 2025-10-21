@@ -37,8 +37,15 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **Data Seeding**: Sample data for development and testing
 - **Type Safety**: Full TypeScript integration with database operations
 
-### Future Enhancements
-> **Note**: Authentication will be added in the next sprint using [better-auth](https://www.better-auth.com/) - a modern, type-safe authentication library for TypeScript applications.
+### User Authentication & Authorization
+- **User Management**: Complete user registration and login system
+- **Password Security**: Argon2id password hashing (industry-standard secure hashing)
+- **User Types**: Support for two user roles - `applicant` and `admin`
+- **ID Security**: User IDs hashed to 6-character strings using SHA-256 (one-way, non-reversible)
+- **Email Validation**: Comprehensive email format validation
+- **Password Strength**: Enforced password requirements (8+ chars, uppercase, lowercase, number, special char)
+- **Last Login Tracking**: Automatic tracking of user login timestamps
+- **Account Management**: User activation/deactivation support
 
 ## � Job Role API
 ```
@@ -55,15 +62,24 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 │   │   └── upload.ts        # Multer configuration for CV uploads
 │   ├── repositories/        # Data access layer
 │   │   ├── jobRoleRepository.ts
-│   │   └── jobApplicationRepository.ts
+│   │   ├── jobApplicationRepository.ts
+│   │   └── userRepository.ts           # User data access
 │   ├── routes/              # Express route definitions
 │   │   ├── index.ts         # Main router
 │   │   ├── jobRoleRoutes.ts
-│   │   └── jobApplicationRoutes.ts
+│   │   ├── jobApplicationRoutes.ts
+│   │   └── userRoutes.ts               # User authentication routes
 │   ├── scripts/             # Utility scripts
 │   │   └── seedDatabase.ts  # Database seeding script
 │   ├── types/               # TypeScript type definitions
-│   │   └── jobRole.ts
+│   │   ├── jobRole.ts
+│   │   └── user.ts                     # User type definitions
+│   ├── utils/               # Utility functions
+│   │   ├── auth.ts                     # Password hashing, ID encoding, validation
+│   │   └── pagination.ts
+│   ├── __tests__/           # Test files
+│   │   ├── jobRole.test.ts
+│   │   └── user.test.ts                # User authentication tests
 │   └── index.ts             # Main application entry point
 ├── drizzle/                 # Database migration files
 ├── dist/                    # Compiled JavaScript output
@@ -215,6 +231,12 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 - **Drizzle ORM**: Type-safe database ORM
 - **better-sqlite3**: Fast SQLite driver for Node.js
 
+### Security & Authentication
+- **Argon2id**: Industry-standard password hashing algorithm
+- **SHA-256 ID Hashing**: User IDs hashed to 6-character strings for secure, non-reversible exposure
+- **Email Validation**: Comprehensive email format validation
+- **Password Strength Validation**: Enforced security requirements
+
 ### Development Tools
 - **tsx**: TypeScript execution engine
 - **Vitest**: Next generation testing framework
@@ -291,6 +313,81 @@ curl -X POST http://localhost:3000/api/applications \
 ```bash
 curl http://localhost:3000/api/applications/1/cv --output cv.pdf
 ```
+
+### User Authentication API
+
+The authentication system provides secure user registration and login with support for two user types:
+
+#### User Types
+- **Applicant**: Regular users who can apply for jobs
+- **Admin**: Administrative users with elevated privileges
+
+#### User Properties
+- **Username**: Email address (unique, validated)
+- **Password**: Securely hashed with Argon2id
+- **User Type**: Role-based access (applicant/admin)
+- **Forename & Surname**: User's name
+- **Is Active**: Account status (active/inactive)
+- **Created At**: Account creation timestamp
+- **Updated At**: Last update timestamp
+- **Last Login**: Last successful login timestamp
+
+#### Security Features
+- **Password Hashing**: Argon2id algorithm for maximum security
+- **Password Requirements**: Minimum 8 characters, uppercase, lowercase, number, special character
+- **Email Validation**: RFC-compliant email format validation
+- **ID Hashing**: User IDs hashed to 6-character strings using SHA-256 (one-way, non-reversible)
+- **Duplicate Prevention**: Unique email constraint prevents duplicate accounts
+- **ID Protection**: Real numeric IDs never exposed in API responses, only 6-character hashes
+
+#### Authentication Endpoints
+- `POST /api/users/register` - Register new user account
+- `POST /api/users/login` - Authenticate user and update last login
+- `GET /api/users/:id` - Get user by ID (returns safe user data without password)
+- `GET /api/users` - Get all users (admin only - requires auth middleware)
+
+#### Register a New User
+```bash
+curl -X POST http://localhost:3000/api/users/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john.doe@example.com",
+    "password": "SecurePass123!",
+    "forename": "John",
+    "surname": "Doe",
+    "userType": "applicant"
+  }'
+```
+
+#### Login
+```bash
+curl -X POST http://localhost:3000/api/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john.doe@example.com",
+    "password": "SecurePass123!"
+  }'
+```
+
+#### Response Example (Safe User Data)
+```json
+{
+  "id": "14f424",
+  "username": "john.doe@example.com",
+  "forename": "John",
+  "surname": "Doe",
+  "userType": "applicant",
+  "isActive": true,
+  "createdAt": "2025-10-15T12:00:00.000Z",
+  "lastLogin": "2025-10-15T14:30:00.000Z"
+}
+```
+
+**Note**: The `id` field is a 6-character SHA-256 hash (e.g., `"14f424"`) of the real numeric user ID. This provides security by:
+- Making it impossible to guess other user IDs
+- Preventing enumeration attacks
+- Hiding the actual number of users in the system
+- Being non-reversible (one-way hash)
 
 📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
 

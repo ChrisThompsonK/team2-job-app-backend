@@ -162,3 +162,4 @@ database_backup.sqlite
 
 # Planning and specification documents (work in progress)
 src/spec/
+src/plans/add-users-table.md

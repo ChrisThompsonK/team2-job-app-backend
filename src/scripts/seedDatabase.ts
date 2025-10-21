@@ -1,7 +1,9 @@
 #!/usr/bin/env tsx
 
 import { db } from "../db/index";
-import { jobRoles } from "../db/schema";
+import { jobRoles, users } from "../db/schema";
+import { userRepository } from "../repositories/userRepository";
+import { hashPassword } from "../utils/auth";
 
 async function seedDatabase(): Promise<void> {
 	console.log("🌱 Starting database seeding...");
@@ -9,7 +11,8 @@ async function seedDatabase(): Promise<void> {
 	try {
 		// Clear existing data first
 		await db.delete(jobRoles);
-		console.log("🧹 Cleared existing job roles");
+		await db.delete(users);
+		console.log("🧹 Cleared existing job roles and users");
 
 		// Create sample job roles
 		const now = new Date();
@@ -201,7 +204,112 @@ async function seedDatabase(): Promise<void> {
 		}
 
 		console.log(`✅ Created ${allCreatedJobs.length} job roles`);
-		console.log("🎉 Database seeding completed successfully!");
+
+		// Seed users
+		console.log("\n👥 Seeding users...");
+
+		// Generate secure random passwords for test users
+		const generateSecurePassword = (): string => {
+			const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			const lowercase = "abcdefghijklmnopqrstuvwxyz";
+			const numbers = "0123456789";
+			const special = "!@#$%^&*";
+
+			let password = "";
+			password += uppercase[Math.floor(Math.random() * uppercase.length)];
+			password += lowercase[Math.floor(Math.random() * lowercase.length)];
+			password += numbers[Math.floor(Math.random() * numbers.length)];
+			password += special[Math.floor(Math.random() * special.length)];
+
+			const allChars = uppercase + lowercase + numbers + special;
+			for (let i = 0; i < 8; i++) {
+				password += allChars[Math.floor(Math.random() * allChars.length)];
+			}
+
+			return password
+				.split("")
+				.sort(() => 0.5 - Math.random())
+				.join("");
+		};
+
+		const usersToCreate = [
+			{
+				username: "admin@kainos.com",
+				password: generateSecurePassword(),
+				userType: "Admin" as const,
+				forename: "Sarah",
+				surname: "Johnson",
+			},
+			{
+				username: "john.doe@example.com",
+				password: generateSecurePassword(),
+				userType: "Applicant" as const,
+				forename: "John",
+				surname: "Doe",
+			},
+			{
+				username: "jane.smith@example.com",
+				password: generateSecurePassword(),
+				userType: "Applicant" as const,
+				forename: "Jane",
+				surname: "Smith",
+			},
+			{
+				username: "michael.brown@example.com",
+				password: generateSecurePassword(),
+				userType: "Applicant" as const,
+				forename: "Michael",
+				surname: "Brown",
+			},
+			{
+				username: "emily.davis@example.com",
+				password: generateSecurePassword(),
+				userType: "Applicant" as const,
+				forename: "Emily",
+				surname: "Davis",
+			},
+			{
+				username: "robert.wilson@example.com",
+				password: generateSecurePassword(),
+				userType: "Applicant" as const,
+				forename: "Robert",
+				surname: "Wilson",
+			},
+			{
+				username: "admin2@kainos.com",
+				password: generateSecurePassword(),
+				userType: "Admin" as const,
+				forename: "David",
+				surname: "Martinez",
+			},
+		];
+
+		const createdUsers = [];
+		for (const userData of usersToCreate) {
+			const hashedPassword = await hashPassword(userData.password);
+			const user = await userRepository.create({
+				...userData,
+				password: hashedPassword,
+			});
+			createdUsers.push(user);
+		}
+
+		// Create one inactive user
+		const inactiveUser = await userRepository.create({
+			username: "inactive.user@example.com",
+			password: await hashPassword(generateSecurePassword()),
+			userType: "Applicant",
+			forename: "Inactive",
+			surname: "User",
+		});
+		await userRepository.updateActiveStatus(inactiveUser.id, false);
+		createdUsers.push({ ...inactiveUser, isActive: false });
+		console.log(`✅ Created ${createdUsers.length} users`);
+		console.log("   - Admin accounts: admin@kainos.com, admin2@kainos.com");
+		console.log("   - Applicant accounts: 6 test users");
+		console.log("   - Default password format: [Name]123! or similar");
+
+		console.log("\n🎉 Database seeding completed successfully!");
 
 		// Display summary statistics
 		console.log("\n📊 Job Role Statistics:");
@@ -245,10 +353,35 @@ async function seedDatabase(): Promise<void> {
 			console.log(`  ${status}: ${count}`);
 		}
 
+		console.log("\n👥 User Statistics:");
+		const statsByUserType = createdUsers.reduce(
+			(acc, user) => {
+				acc[user.userType] = (acc[user.userType] || 0) + 1;
+				return acc;
+			},
+			{} as Record<string, number>
+		);
+
+		console.log(`  Total users: ${createdUsers.length}`);
+		for (const [userType, count] of Object.entries(statsByUserType)) {
+			console.log(`  ${userType}: ${count}`);
+		}
+		console.log(
+			`  Active users: ${createdUsers.filter((u) => u.isActive).length}`
+		);
+		console.log(
+			`  Inactive users: ${createdUsers.filter((u) => !u.isActive).length}`
+		);
+
 		console.log(`\n🔗 Test pagination at: /api/job-roles?page=1&limit=12`);
 		console.log(
 			`📄 Total pages with limit 12: ${Math.ceil(allCreatedJobs.length / 12)}`
 		);
+		console.log("\n🔐 Test login credentials have been configured securely.");
+		console.log(
+			"   For security reasons, plaintext passwords are not displayed."
+		);
+		console.log("   Contact your system administrator for test credentials.");
 	} catch (error) {
 		console.error("❌ Error seeding database:", error);
 		process.exit(1);

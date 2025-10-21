@@ -19,13 +19,19 @@ export const jobRoles = sqliteTable("job_roles", {
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-// Users table - represents job applicants
+// Users table - represents authenticated users (applicants and admins)
 export const users = sqliteTable("users", {
 	id: integer("id").primaryKey(),
-	name: text("name").notNull(),
-	email: text("email").notNull().unique(),
-	role: text("role").notNull().default("user"),
+	hashedId: text("hashed_id").notNull().unique(), // 6-character hashed ID for public exposure
+	username: text("username").notNull().unique(), // Email address
+	password: text("password").notNull(), // Hashed password using Argon2id
+	userType: text("user_type").notNull().default("Applicant"), // 'Applicant' or 'Admin'
+	forename: text("forename").notNull(),
+	surname: text("surname").notNull(),
+	isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+	lastLogin: integer("last_login", { mode: "timestamp" }),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
 // Job Applications table - represents individual job applications
