@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "../db";
 import { jobRoles } from "../db/schema";
 import type { JobRole } from "../types/jobRole";
@@ -15,8 +15,14 @@ export class JobRoleRepository {
 	}) {
 		const conditions = [];
 
+		// Handle status case-insensitively
+		if (options.status) {
+			conditions.push(
+				sql`lower(${jobRoles.status}) = lower(${options.status})`
+			);
+		}
+
 		const filterMap = {
-			status: jobRoles.status,
 			capability: jobRoles.capability,
 			band: jobRoles.band,
 			location: jobRoles.location,
