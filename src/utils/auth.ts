@@ -1,22 +1,20 @@
 import { createHash } from "node:crypto";
-import argon2 from "argon2";
+import bcrypt from "bcrypt";
 
 // Secret salt for ID hashing - in production, this should be in environment variables
 const ID_HASH_SECRET =
 	process.env["ID_HASH_SECRET"] || "kainos-job-app-secret-2025";
 
+// Number of salt rounds for bcrypt (10 is a good balance of security and performance)
+const BCRYPT_ROUNDS = 10;
+
 /**
- * Hash a password using Argon2id
+ * Hash a password using bcrypt
  * @param password - Plain text password
  * @returns Hashed password
  */
 export async function hashPassword(password: string): Promise<string> {
-	return await argon2.hash(password, {
-		type: argon2.argon2id,
-		memoryCost: 65536, // 64 MiB
-		timeCost: 3, // Number of iterations
-		parallelism: 4, // Number of threads
-	});
+	return await bcrypt.hash(password, BCRYPT_ROUNDS);
 }
 
 /**
@@ -30,7 +28,7 @@ export async function verifyPassword(
 	password: string
 ): Promise<boolean> {
 	try {
-		return await argon2.verify(hash, password);
+		return await bcrypt.compare(password, hash);
 	} catch (_error) {
 		return false;
 	}
@@ -77,13 +75,54 @@ export function verifyUserId(id: number, hashedId: string): boolean {
 }
 
 /**
- * Validate email format
+ * Validate email format using a more comprehensive regex
+ * This validates:
+ * - Local part: alphanumeric, dots, hyphens, underscores, plus signs
+ * - Cannot start or end with a dot
+ * - Cannot have consecutive dots
+ * - Domain: alphanumeric and hyphens
+ * - TLD: 2-63 characters, letters only
  * @param email - Email address to validate
  * @returns True if email format is valid
  */
 export function isValidEmail(email: string): boolean {
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	return emailRegex.test(email);
+	// Comprehensive email regex following RFC 5322 simplified version
+	// Local part: allows letters, numbers, dots, hyphens, underscores, plus
+	// Domain part: standard domain format with valid TLD
+	const emailRegex =
+		/^[a-zA-Z0-9](?:[a-zA-Z0-9._+-]{0,61}[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,63}$/;
+
+	if (!emailRegex.test(email)) {
+		return false;
+	}
+
+	// Additional validation checks
+	const [localPart, domainPart] = email.split("@");
+
+	// Check local part (before @)
+	if (!localPart || localPart.length > 64) {
+		return false; // Local part too long
+	}
+
+	// Check for consecutive dots
+	if (localPart.includes("..")) {
+		return false;
+	}
+
+	// Check domain part (after @)
+	if (!domainPart || domainPart.length > 253) {
+		return false; // Domain too long
+	}
+
+	// Check each domain label length (between dots)
+	const domainLabels = domainPart.split(".");
+	for (const label of domainLabels) {
+		if (label.length === 0 || label.length > 63) {
+			return false; // Label too long or empty
+		}
+	}
+
+	return true;
 }
 
 /**

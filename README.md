@@ -39,10 +39,10 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ### User Authentication & Authorization
 - **User Management**: Complete user registration and login system
-- **Password Security**: Argon2id password hashing (industry-standard secure hashing)
+- **Password Security**: bcrypt password hashing (10 salt rounds, industry-standard secure hashing)
 - **User Types**: Support for two user roles - `applicant` and `admin`
 - **ID Security**: User IDs hashed to 6-character strings using SHA-256 (one-way, non-reversible)
-- **Email Validation**: Comprehensive email format validation
+- **Email Validation**: RFC 5322 compliant email validation (rejects special characters, validates TLDs, checks length limits)
 - **Password Strength**: Enforced password requirements (8+ chars, uppercase, lowercase, number, special char)
 - **Last Login Tracking**: Automatic tracking of user login timestamps
 - **Account Management**: User activation/deactivation support
@@ -232,9 +232,9 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 - **better-sqlite3**: Fast SQLite driver for Node.js
 
 ### Security & Authentication
-- **Argon2id**: Industry-standard password hashing algorithm
+- **bcrypt**: Industry-standard password hashing algorithm (10 salt rounds)
 - **SHA-256 ID Hashing**: User IDs hashed to 6-character strings for secure, non-reversible exposure
-- **Email Validation**: Comprehensive email format validation
+- **Email Validation**: RFC 5322 compliant email format validation with comprehensive checks
 - **Password Strength Validation**: Enforced security requirements
 
 ### Development Tools
@@ -333,9 +333,14 @@ The authentication system provides secure user registration and login with suppo
 - **Last Login**: Last successful login timestamp
 
 #### Security Features
-- **Password Hashing**: Argon2id algorithm for maximum security
+- **Password Hashing**: bcrypt algorithm with 10 salt rounds for maximum security
 - **Password Requirements**: Minimum 8 characters, uppercase, lowercase, number, special character
-- **Email Validation**: RFC-compliant email format validation
+- **Email Validation**: RFC 5322 compliant format validation with:
+  - Valid character restrictions (alphanumeric, dots, hyphens, underscores, plus signs)
+  - No consecutive dots allowed
+  - Local part max 64 characters, domain max 253 characters
+  - Valid TLD requirements (2-63 letters only)
+  - Rejects special characters like `!<>:"|{}_*()&^%$£` in domain
 - **ID Hashing**: User IDs hashed to 6-character strings using SHA-256 (one-way, non-reversible)
 - **Duplicate Prevention**: Unique email constraint prevents duplicate accounts
 - **ID Protection**: Real numeric IDs never exposed in API responses, only 6-character hashes

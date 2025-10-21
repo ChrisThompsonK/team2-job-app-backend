@@ -24,7 +24,7 @@ export const users = sqliteTable("users", {
 	id: integer("id").primaryKey(),
 	hashedId: text("hashed_id").notNull().unique(), // 6-character hashed ID for public exposure
 	username: text("username").notNull().unique(), // Email address
-	password: text("password").notNull(), // Hashed password using Argon2id
+	password: text("password").notNull(), // Hashed password using bcrypt
 	userType: text("user_type").notNull().default("Applicant"), // 'Applicant' or 'Admin'
 	forename: text("forename").notNull(),
 	surname: text("surname").notNull(),
