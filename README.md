@@ -41,7 +41,7 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **User Management**: Complete user registration and login system
 - **Password Security**: bcrypt password hashing (10 salt rounds, industry-standard secure hashing)
 - **User Types**: Support for two user roles - `applicant` and `admin`
-- **ID Security**: User IDs hashed to 6-character strings using SHA-256 (one-way, non-reversible)
+- **ID Security**: User IDs encoded with Sqids (unique, reversible, URL-safe, minimum 8 characters)
 - **Email Validation**: RFC 5322 compliant email validation (rejects special characters, validates TLDs, checks length limits)
 - **Password Strength**: Enforced password requirements (8+ chars, uppercase, lowercase, number, special char)
 - **Last Login Tracking**: Automatic tracking of user login timestamps
@@ -233,7 +233,7 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 
 ### Security & Authentication
 - **bcrypt**: Industry-standard password hashing algorithm (10 salt rounds)
-- **SHA-256 ID Hashing**: User IDs hashed to 6-character strings for secure, non-reversible exposure
+- **Sqids**: Unique, reversible ID encoding (minimum 8 characters, URL-safe, profanity-free)
 - **Email Validation**: RFC 5322 compliant email format validation with comprehensive checks
 - **Password Strength Validation**: Enforced security requirements
 
@@ -341,9 +341,9 @@ The authentication system provides secure user registration and login with suppo
   - Local part max 64 characters, domain max 253 characters
   - Valid TLD requirements (2-63 letters only)
   - Rejects special characters like `!<>:"|{}_*()&^%$£` in domain
-- **ID Hashing**: User IDs hashed to 6-character strings using SHA-256 (one-way, non-reversible)
+- **ID Encoding**: User IDs encoded with Sqids (reversible, unique, URL-safe, minimum 8 characters)
 - **Duplicate Prevention**: Unique email constraint prevents duplicate accounts
-- **ID Protection**: Real numeric IDs never exposed in API responses, only 6-character hashes
+- **ID Protection**: Real numeric IDs never exposed in API responses, only encoded Sqids
 
 #### Authentication Endpoints
 - `POST /api/users/register` - Register new user account
@@ -377,7 +377,7 @@ curl -X POST http://localhost:3000/api/users/login \
 #### Response Example (Safe User Data)
 ```json
 {
-  "id": "14f424",
+  "id": "gEUxq0mJ",
   "username": "john.doe@example.com",
   "forename": "John",
   "surname": "Doe",
@@ -388,11 +388,11 @@ curl -X POST http://localhost:3000/api/users/login \
 }
 ```
 
-**Note**: The `id` field is a 6-character SHA-256 hash (e.g., `"14f424"`) of the real numeric user ID. This provides security by:
-- Making it impossible to guess other user IDs
-- Preventing enumeration attacks
+**Note**: The `id` field is a Sqids-encoded string (e.g., `"gEUxq0mJ"`) of the real numeric user ID. This provides security by:
+- Creating unique, URL-safe identifiers for each user
+- Preventing enumeration attacks and ID guessing
 - Hiding the actual number of users in the system
-- Being non-reversible (one-way hash)
+- Being reversible for efficient database lookups (server-side only)
 
 📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
 

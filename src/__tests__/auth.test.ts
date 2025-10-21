@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isValidEmail, validatePasswordStrength } from "../utils/auth.js";
+import {
+	decodeUserId,
+	encodeUserId,
+	isValidEmail,
+	validatePasswordStrength,
+	verifyUserId,
+} from "../utils/auth.js";
 
 describe("Email Validation", () => {
 	describe("Valid Emails", () => {
@@ -116,6 +122,89 @@ describe("Email Validation", () => {
 			expect(isValidEmail("")).toBe(false);
 			expect(isValidEmail(" ")).toBe(false);
 			expect(isValidEmail("   ")).toBe(false);
+		});
+	});
+});
+
+describe("User ID Encoding (Sqids)", () => {
+	describe("encodeUserId", () => {
+		it("should encode user IDs to unique strings", () => {
+			const encoded1 = encodeUserId(1);
+			const encoded2 = encodeUserId(2);
+			const encoded100 = encodeUserId(100);
+
+			expect(encoded1).toBeTruthy();
+			expect(encoded2).toBeTruthy();
+			expect(encoded100).toBeTruthy();
+
+			// All should be different
+			expect(encoded1).not.toBe(encoded2);
+			expect(encoded1).not.toBe(encoded100);
+			expect(encoded2).not.toBe(encoded100);
+		});
+
+		it("should produce minimum 8-character IDs", () => {
+			const encoded = encodeUserId(1);
+			expect(encoded.length).toBeGreaterThanOrEqual(8);
+		});
+
+		it("should produce consistent results for same input", () => {
+			const encoded1a = encodeUserId(123);
+			const encoded1b = encodeUserId(123);
+			expect(encoded1a).toBe(encoded1b);
+		});
+
+		it("should handle large user IDs", () => {
+			const largeId = 9999999;
+			const encoded = encodeUserId(largeId);
+			expect(encoded).toBeTruthy();
+			expect(typeof encoded).toBe("string");
+		});
+	});
+
+	describe("decodeUserId", () => {
+		it("should decode encoded IDs back to original numbers", () => {
+			const originalId = 42;
+			const encoded = encodeUserId(originalId);
+			const decoded = decodeUserId(encoded);
+
+			expect(decoded).toBe(originalId);
+		});
+
+		it("should return null for empty encoded IDs", () => {
+			expect(decodeUserId("")).toBe(null);
+		});
+
+		it("should handle multiple encode/decode cycles", () => {
+			const testIds = [1, 10, 100, 1000, 10000];
+
+			for (const id of testIds) {
+				const encoded = encodeUserId(id);
+				const decoded = decodeUserId(encoded);
+				expect(decoded).toBe(id);
+			}
+		});
+	});
+
+	describe("verifyUserId", () => {
+		it("should verify matching ID and encoded ID", () => {
+			const userId = 123;
+			const encodedId = encodeUserId(userId);
+
+			expect(verifyUserId(userId, encodedId)).toBe(true);
+		});
+
+		it("should reject non-matching ID and encoded ID", () => {
+			const userId1 = 123;
+			const userId2 = 456;
+			const encodedId1 = encodeUserId(userId1);
+
+			expect(verifyUserId(userId2, encodedId1)).toBe(false);
+		});
+
+		it("should handle edge cases", () => {
+			expect(verifyUserId(1, encodeUserId(1))).toBe(true);
+			expect(verifyUserId(0, encodeUserId(0))).toBe(true);
 		});
 	});
 });

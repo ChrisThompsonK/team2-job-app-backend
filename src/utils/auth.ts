@@ -1,9 +1,18 @@
-import { createHash } from "node:crypto";
 import bcrypt from "bcrypt";
+import Sqids from "sqids";
 
-// Secret salt for ID hashing - in production, this should be in environment variables
-const ID_HASH_SECRET =
-	process.env["ID_HASH_SECRET"] || "kainos-job-app-secret-2025";
+// Initialize Sqids with a minimum length for better uniqueness
+// In production, you can customize the alphabet via environment variables
+const sqidsOptions: { minLength: number; alphabet?: string } = {
+	minLength: 8, // Ensures IDs are at least 8 characters long
+};
+
+// Only add custom alphabet if provided
+if (process.env["SQIDS_ALPHABET"]) {
+	sqidsOptions.alphabet = process.env["SQIDS_ALPHABET"];
+}
+
+const sqids = new Sqids(sqidsOptions);
 
 // Number of salt rounds for bcrypt (10 is a good balance of security and performance)
 const BCRYPT_ROUNDS = 10;
@@ -35,43 +44,37 @@ export async function verifyPassword(
 }
 
 /**
- * Hash a user ID to a 6-character string using SHA-256
- * This creates a one-way hash that cannot be reversed, protecting user IDs from exposure
+ * Encode a user ID to a unique string using Sqids
+ * This creates a reversible, URL-safe ID that protects the actual numeric ID
  * @param id - Numeric user ID
- * @returns 6-character hashed ID
+ * @returns Encoded user ID (minimum 8 characters)
  */
 export function encodeUserId(id: number): string {
-	const hash = createHash("sha256");
-	hash.update(`${ID_HASH_SECRET}-${id}`);
-	const fullHash = hash.digest("hex");
-	// Take first 6 characters of the hash
-	return fullHash.substring(0, 6);
+	return sqids.encode([id]);
 }
 
 /**
- * Since IDs are now one-way hashed, we need to maintain a mapping
- * This function is kept for API compatibility but will need to be replaced
- * with a database lookup approach in production
- * @param encodedId - 6-character hashed ID
+ * Decode a Sqids-encoded ID back to the original numeric user ID
+ * @param encodedId - Sqids-encoded user ID
  * @returns Numeric user ID or null if invalid
  */
-export function decodeUserId(_encodedId: string): number | null {
-	// One-way hashes cannot be decoded
-	// In production, you would:
-	// 1. Store the hashed ID in the database alongside the real ID
-	// 2. Look up the real ID by querying the database with the hashed ID
-	// For now, return null to indicate this needs database lookup
-	return null;
+export function decodeUserId(encodedId: string): number | null {
+	try {
+		const numbers = sqids.decode(encodedId);
+		return numbers.length > 0 && numbers[0] !== undefined ? numbers[0] : null;
+	} catch (_error) {
+		return null;
+	}
 }
 
 /**
- * Verify if a user ID matches a hashed ID
+ * Verify if a user ID matches an encoded ID
  * @param id - Numeric user ID to verify
- * @param hashedId - 6-character hashed ID to compare against
- * @returns True if the ID matches the hash
+ * @param encodedId - Sqids-encoded ID to compare against
+ * @returns True if the ID matches the encoded ID
  */
-export function verifyUserId(id: number, hashedId: string): boolean {
-	return encodeUserId(id) === hashedId;
+export function verifyUserId(id: number, encodedId: string): boolean {
+	return encodeUserId(id) === encodedId;
 }
 
 /**
