@@ -22,10 +22,16 @@ export const jobRoles = sqliteTable("job_roles", {
 // Users table - represents job applicants
 export const users = sqliteTable("users", {
 	id: integer("id").primaryKey(),
-	name: text("name").notNull(),
-	email: text("email").notNull().unique(),
-	role: text("role").notNull().default("user"),
+	hashedId: text("hashed_id").notNull().unique(),
+	username: text("username").notNull().unique(),
+	password: text("password").notNull(),
+	userType: text("user_type").notNull().default("applicant"),
+	forename: text("forename").notNull(),
+	surname: text("surname").notNull(),
+	isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+	lastLogin: integer("last_login", { mode: "timestamp" }),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
 // Job Applications table - represents individual job applications

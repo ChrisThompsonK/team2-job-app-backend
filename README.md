@@ -18,10 +18,8 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ### Job Role Management
 - **Complete CRUD Operations**: Create, Read, Update, Delete job roles
-- **Advanced Search & Filtering**: Full-text search on job role names with multi-criteria filtering
-- **Filter Options API**: Dynamic retrieval of available capabilities, locations, and bands
 - **Advanced Filtering**: Filter by status, capability, location, and band
-- **Pagination Support**: Efficient handling of large datasets with configurable page sizes
+- **Pagination Support**: Efficient handling of large datasets
 - **Data Validation**: Comprehensive input validation and error handling
 - **RESTful API Design**: Clean, intuitive API endpoints
 
@@ -39,17 +37,27 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **Data Seeding**: Sample data for development and testing
 - **Type Safety**: Full TypeScript integration with database operations
 
-### Future Enhancements
-> **Note**: Authentication will be added in the next sprint using [better-auth](https://www.better-auth.com/) - a modern, type-safe authentication library for TypeScript applications.
+### User Authentication & Management
+- **User Registration**: Register new users with encrypted passwords (bcrypt)
+- **User Login**: Authenticate users with username and password
+- **Password Security**: Bcrypt encryption with 10 salt rounds
+- **Username Uniqueness**: No duplicate usernames allowed
+- **Automatic Timestamps**: CreatedAt and UpdatedAt fields auto-generated
+- **Default User Role**: All new users default to "Applicant" role
+- **User Management**: Admin features for viewing all users
 
-## � Job Role API
+### Future Enhancements
+> **Note**: JWT token-based authentication and role-based authorization will be added in future sprints.
+
+## 📦 Job Role API
 ```
 ├── src/
 │   ├── config/              # Application configuration
 │   │   └── index.ts         # Centralized config with env variables
 │   ├── controllers/          # API controllers for business logic
 │   │   ├── jobRoleController.ts
-│   │   └── jobApplicationController.ts
+│   │   ├── jobApplicationController.ts
+│   │   └── userController.ts
 │   ├── db/                   # Database configuration and schema
 │   │   ├── index.ts         # Database connection setup
 │   │   └── schema.ts        # Drizzle schema definitions
@@ -57,15 +65,18 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 │   │   └── upload.ts        # Multer configuration for CV uploads
 │   ├── repositories/        # Data access layer
 │   │   ├── jobRoleRepository.ts
-│   │   └── jobApplicationRepository.ts
+│   │   ├── jobApplicationRepository.ts
+│   │   └── userRepository.ts
 │   ├── routes/              # Express route definitions
 │   │   ├── index.ts         # Main router
 │   │   ├── jobRoleRoutes.ts
-│   │   └── jobApplicationRoutes.ts
+│   │   ├── jobApplicationRoutes.ts
+│   │   └── userRoutes.ts
 │   ├── scripts/             # Utility scripts
 │   │   └── seedDatabase.ts  # Database seeding script
 │   ├── types/               # TypeScript type definitions
-│   │   └── jobRole.ts
+│   │   ├── jobRole.ts
+│   │   └── user.ts
 │   └── index.ts             # Main application entry point
 ├── drizzle/                 # Database migration files
 ├── dist/                    # Compiled JavaScript output
@@ -115,7 +126,6 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 1. **Install Dependencies**: `npm install`
 2. **Setup Environment**: Copy `.env.example` to `.env` and configure
    ```bash
-   cp .env.example .env
    ```
 3. **Setup Database**: `npm run db:push`
 4. **Seed Sample Data**: `npm run db:seed`
@@ -150,196 +160,4 @@ cp .env.example .env
 - ✅ **Different configs per environment** - Use different values in dev, test, and production
 - ✅ **Platform-specific in production** - Use Heroku, Vercel, or AWS environment variable tools instead of `.env` files
 
-#### Debug Endpoint (Development Only)
-
-When running in development mode, a debug endpoint is available:
-
-```bash
-GET http://localhost:3000/debug/config
-```
-
-This returns the current configuration (useful for troubleshooting).
-
-### Development Workflow
-1. **Development Mode**: Use `npm run dev` for fast development with tsx
-2. **Database Changes**: 
-   - Update schema in `src/db/schema.ts`
-   - Run `npm run db:generate` to create migration
-   - Run `npm run db:push` to apply changes
-3. **Testing**: Run `npm test` for watch mode or `npm run test:run` for single run
-4. **Type Checking**: Run `npm run type-check` to validate TypeScript
-5. **Code Quality**: Use `npm run check:fix` to fix linting and formatting
-6. **Database GUI**: Use `npm run db:studio` to explore data
-
-### Code Quality Workflow
-```bash
-# Check and fix all code quality issues
-npm run check:fix
-
-# Or run individually
-npm run lint:fix    # Fix linting issues
-npm run format:fix  # Fix formatting issues
-```
-
-### API Testing
-```bash
-# Test health endpoint
-curl http://localhost:3000/api/health
-
-# Get all job roles
-curl http://localhost:3000/api/job-roles
-
-# Search job roles by name
-curl "http://localhost:3000/api/job-roles/search?search=engineer"
-
-# Filter by status (Open positions only)
-curl "http://localhost:3000/api/job-roles/search?status=Open"
-
-# Search with status filter
-curl "http://localhost:3000/api/job-roles/search?search=developer&status=Open"
-
-# Search with multiple filters
-curl "http://localhost:3000/api/job-roles/search?search=senior&capability=Engineering&location=Dublin,%20Ireland&band=Senior&status=Open"
-
-# Get filter options for search form
-curl http://localhost:3000/api/job-roles/capabilities
-curl http://localhost:3000/api/job-roles/locations
-curl http://localhost:3000/api/job-roles/bands
-
-# Get specific job role
-curl http://localhost:3000/api/job-roles/1
-
-# Create a new job role
-curl -X POST http://localhost:3000/api/job-roles \
-  -H "Content-Type: application/json" \
-  -d '{"jobRoleName":"Test Job","description":"Test Description",...}'
-
-# Update an existing job role
-curl -X PUT http://localhost:3000/api/job-roles/1 \
-  -H "Content-Type: application/json" \
-  -d '{"status":"closed"}'
-```
-
-## 🏗️ Tech Stack
-
-### Backend Framework
-- **Node.js**: Runtime environment
-- **TypeScript**: Type-safe JavaScript
-- **Express.js**: Fast, unopinionated web framework
-- **CORS**: Cross-Origin Resource Sharing support
-- **Multer**: Middleware for handling multipart/form-data (file uploads)
-
-### Database
-- **SQLite**: Lightweight, serverless database
-- **Drizzle ORM**: Type-safe database ORM
-- **better-sqlite3**: Fast SQLite driver for Node.js
-
-### Development Tools
-- **tsx**: TypeScript execution engine
-- **Vitest**: Next generation testing framework
-- **Biome**: Fast formatter, linter, and import organizer
-- **ES Modules**: Modern module system
-
-### API Features
-- **RESTful Design**: Clean, intuitive API endpoints
-- **JSON API**: Standard JSON request/response format
-- **Error Handling**: Comprehensive error responses
-- **Input Validation**: Request validation and sanitization
-
-## � Job Application API
-
-This API manages job roles with all required properties for a job portal:
-
-### Job Role Properties
-- **Job Role Name**: Position title
-- **Description**: Job description
-- **Responsibilities**: Key responsibilities
-- **Job Spec Link**: SharePoint link to detailed job specification
-- **Location**: Job location
-- **Capability**: Department/capability area
-- **Band**: Job level (Junior, Mid, Senior, etc.)
-- **Closing Date**: Application deadline
-- **Status**: Current status (active, closed, draft)
-- **Number of Open Positions**: Available positions
-
-### Available Endpoints
-
-#### Job Role Endpoints
-- `GET /api/job-roles` - Get all job roles (with filtering & pagination)
-- `GET /api/job-roles/search` - Search and filter job roles with advanced criteria
-- `GET /api/job-roles/capabilities` - Get list of distinct capabilities
-- `GET /api/job-roles/locations` - Get list of distinct locations
-- `GET /api/job-roles/bands` - Get list of distinct bands
-- `GET /api/job-roles/:id` - Get specific job role
-- `POST /api/job-roles` - Create new job role
-- `PUT /api/job-roles/:id` - Update job role
-- `DELETE /api/job-roles/:id` - Delete job role
-
-#### System Endpoints
-- `GET /api/health` - API health check
-
-### Sample Job Roles
-The database comes pre-seeded with sample jobs including:
-- Senior Software Engineer (Engineering, London)
-- Product Manager (Product, Manchester)  
-- UX Designer (Design, Birmingham)
-- Data Analyst (Analytics, Leeds)
-- DevOps Engineer (Engineering, Remote)
-
-### Job Applications API
-
-The application system allows users to apply for job roles with CV upload:
-
-#### Application Requirements
-- **Eligibility Check**: Only roles with status "active" and `numberOfOpenPositions > 0` accept applications
-- **CV Required**: All applications must include a CV file (PDF, DOC, or DOCX)
-- **File Size Limit**: Maximum CV file size is 5MB
-- **Status**: Applications are automatically set to "in progress" upon submission
-
-#### Application Endpoints
-- `POST /api/applications` - Submit job application with CV (multipart/form-data)
-- `GET /api/applications` - Get all applications (with filtering)
-- `GET /api/applications/:id` - Get specific application
-- `GET /api/applications/:id/cv` - Download application CV
-- `PUT /api/applications/:id` - Update application status
-- `DELETE /api/applications/:id` - Delete application
-- `GET /api/applications/job-role/:jobRoleId` - Get applications for specific job role
-
-#### Applying for a Job (multipart/form-data)
-```bash
-curl -X POST http://localhost:3000/api/applications \
-  -F "cv=@/path/to/resume.pdf" \
-  -F "jobRoleId=1" \
-  -F "applicantName=John Doe" \
-  -F "applicantEmail=john@example.com" \
-  -F "coverLetter=I am interested in this position..."
-```
-
-#### Download CV
-```bash
-curl http://localhost:3000/api/applications/1/cv --output cv.pdf
-```
-
-📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
-
-## �📝 Configuration
-
-The project uses modern TypeScript configuration with:
-- ES2022 target and lib
-- ESNext modules with bundler resolution
-- Strict type checking enabled
-- Source maps and declarations generated
-- Comprehensive compiler options for better code quality
-
-### Vitest Configuration
-- **Environment**: Node.js testing environment
-- **Globals**: Enabled (describe, it, expect available globally)
-- **Coverage**: V8 provider with HTML/JSON/text reports
-- **File Patterns**: Tests in `**/*.{test,spec}.{js,ts,tsx}` files
-- **UI**: Interactive testing interface available
-
-### Biome Configuration
-- **Linting**: Recommended rules with TypeScript support
-- **Formatting**: Tab indentation (2 spaces), 80-character line width
-- **Code Style**: Double quotes, trailing commas (ES5), semicolons
 - **File Coverage**: All files in `src/` directory
