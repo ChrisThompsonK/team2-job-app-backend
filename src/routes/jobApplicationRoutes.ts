@@ -19,11 +19,12 @@ router.get("/", getAllApplications);
 // Note: This must come before /:id to avoid route conflicts
 router.get("/job-role/:jobRoleId", getApplicationsByJobRole);
 
+// GET /api/applications/:id/cv - Download CV for a specific application
+// Note: This must come before /:id to avoid route conflicts with dynamic id parameter
+router.get("/:id/cv", downloadCv);
+
 // GET /api/applications/:id - Get a specific application by ID
 router.get("/:id", getApplicationById);
-
-// GET /api/applications/:id/cv - Download CV for a specific application
-router.get("/:id/cv", downloadCv);
 
 // POST /api/applications - Create a new application with CV upload
 router.post("/", upload.single("cv"), createApplication);
