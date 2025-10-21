@@ -15,6 +15,9 @@ import {
 	validatePaginationParams,
 } from "../utils/pagination";
 
+// Constants
+const MAX_SEARCH_TERM_LENGTH = 200;
+
 /**
  * Get all job roles with optional filtering and pagination
  */
@@ -374,11 +377,11 @@ export async function searchJobRoles(
 		const { search, capability, location, band, status, page, limit } =
 			req.query;
 
-		// Validate search parameter length (suggested max 200 characters)
-		if (search && search.trim().length > 200) {
+		// Validate search parameter length
+		if (search && search.trim().length > MAX_SEARCH_TERM_LENGTH) {
 			res.status(400).json({
 				success: false,
-				error: "Search term must be 200 characters or less",
+				error: `Search term must be ${MAX_SEARCH_TERM_LENGTH} characters or less`,
 			});
 			return;
 		}
