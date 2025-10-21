@@ -7,12 +7,16 @@ import type {
 	JobRoleResponse,
 	JobRolesQuery,
 	PaginatedJobRolesResponse,
+	SearchJobRolesQuery,
 	UpdateJobRoleRequest,
 } from "../types/jobRole";
 import {
 	calculatePaginationMetadata,
 	validatePaginationParams,
 } from "../utils/pagination";
+
+// Constants
+const MAX_SEARCH_TERM_LENGTH = 200;
 
 /**
  * Get all job roles with optional filtering and pagination
@@ -358,6 +362,158 @@ export async function deleteJobRole(
 		res.status(500).json({
 			success: false,
 			message: "An error occurred while deleting the job role",
+		});
+	}
+}
+
+/**
+ * Search job roles with optional filters and pagination
+ */
+export async function searchJobRoles(
+	req: Request<Record<string, never>, unknown, unknown, SearchJobRolesQuery>,
+	res: Response<ApiResponse<PaginatedJobRolesResponse>>
+): Promise<void> {
+	try {
+		const { search, capability, location, band, status, page, limit } =
+			req.query;
+
+		// Validate search parameter length
+		if (search && search.trim().length > MAX_SEARCH_TERM_LENGTH) {
+			res.status(400).json({
+				success: false,
+				error: `Search term must be ${MAX_SEARCH_TERM_LENGTH} characters or less`,
+			});
+			return;
+		}
+
+		// Validate pagination parameters
+		const paginationValidation = validatePaginationParams(page, limit);
+		if (!paginationValidation.valid) {
+			res.status(400).json({
+				success: false,
+				error: (paginationValidation as { valid: false; error: string }).error,
+			});
+			return;
+		}
+
+		const { params } = paginationValidation;
+
+		// Build search filters
+		const searchFilters = {
+			...(search?.trim() && { search: search.trim() }),
+			...(capability && { capability }),
+			...(location && { location }),
+			...(band && { band }),
+			...(status && { status }),
+		};
+
+		// Get total count for pagination metadata
+		const totalCount =
+			await jobRoleRepository.getSearchJobRolesCount(searchFilters);
+
+		// Get paginated results
+		const results = await jobRoleRepository.searchJobRoles({
+			...searchFilters,
+			limit: params.limit,
+			offset: params.offset,
+		});
+
+		// Convert timestamps to ISO strings
+		const formattedResults: JobRoleResponse[] = results.map((job: JobRole) => ({
+			...job,
+			createdAt: new Date(job.createdAt).toISOString(),
+			updatedAt: new Date(job.updatedAt).toISOString(),
+			closingDate: new Date(job.closingDate).toISOString(),
+		}));
+
+		// Calculate pagination metadata
+		const pagination = calculatePaginationMetadata(
+			totalCount,
+			params.page,
+			params.limit
+		);
+
+		res.json({
+			success: true,
+			data: {
+				jobRoles: formattedResults,
+				pagination,
+			},
+		});
+	} catch (error) {
+		console.error("Error searching job roles:", error);
+		res.status(500).json({
+			success: false,
+			error: "An error occurred while searching job roles.",
+		});
+	}
+}
+
+/**
+ * Get distinct capabilities from job roles
+ */
+export async function getCapabilities(
+	_req: Request,
+	res: Response<ApiResponse<string[]>>
+): Promise<void> {
+	try {
+		const capabilities = await jobRoleRepository.getDistinctCapabilities();
+
+		res.json({
+			success: true,
+			data: capabilities,
+		});
+	} catch (error) {
+		console.error("Error getting capabilities:", error);
+		res.status(500).json({
+			success: false,
+			error: "An error occurred while retrieving capabilities.",
+		});
+	}
+}
+
+/**
+ * Get distinct locations from job roles
+ */
+export async function getLocations(
+	_req: Request,
+	res: Response<ApiResponse<string[]>>
+): Promise<void> {
+	try {
+		const locations = await jobRoleRepository.getDistinctLocations();
+
+		res.json({
+			success: true,
+			data: locations,
+		});
+	} catch (error) {
+		console.error("Error getting locations:", error);
+		res.status(500).json({
+			success: false,
+			error: "An error occurred while retrieving locations.",
+		});
+	}
+}
+
+/**
+ * Get distinct bands from job roles
+ */
+export async function getBands(
+	_req: Request,
+	res: Response<ApiResponse<string[]>>
+): Promise<void> {
+	try {
+		const bands = await jobRoleRepository.getDistinctBands();
+
+		res.json({
+			success: true,
+			data: bands,
+		});
+	} catch (error) {
+		console.error("Error getting bands:", error);
+		res.status(500).json({
+			success: false,
+			error: "An error occurred while retrieving bands.",
 		});
 	}
 }
