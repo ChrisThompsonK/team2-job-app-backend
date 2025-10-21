@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import { userRepository } from "../repositories/userRepository";
 import type {
