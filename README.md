@@ -324,7 +324,7 @@ The authentication system provides secure user registration and login with suppo
 
 #### User Properties
 - **Username**: Email address (unique, validated)
-- **Password**: Securely hashed with Argon2id
+- **Password**: Securely hashed with bcrypt
 - **User Type**: Role-based access (applicant/admin)
 - **Forename & Surname**: User's name
 - **Is Active**: Account status (active/inactive)
