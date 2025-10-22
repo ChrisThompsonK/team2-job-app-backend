@@ -19,14 +19,24 @@ export const jobRoles = sqliteTable("job_roles", {
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-// Users table - represents job applicants
-export const users = sqliteTable("users", {
-	id: integer("id").primaryKey(),
-	name: text("name").notNull(),
+// Authentication Users table - represents authenticated users (Admins and Applicants)
+export const authUsers = sqliteTable("auth_users", {
+	userId: text("user_id").primaryKey(), // Sqid-generated ID
 	email: text("email").notNull().unique(),
-	role: text("role").notNull().default("user"),
+	password: text("password").notNull(), // bcrypt hashed
+	forename: text("forename").notNull(),
+	surname: text("surname").notNull(),
+	role: text("role", { enum: ["Admin", "Applicant"] })
+		.notNull()
+		.default("Applicant"),
+	isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+	lastLogin: integer("last_login", { mode: "timestamp" }),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
+
+// Note: Sessions table is managed automatically by connect-sqlite3
+// The library creates and manages its own 'sessions' table structure
 
 // Job Applications table - represents individual job applications
 export const jobApplications = sqliteTable("job_applications", {
@@ -34,6 +44,7 @@ export const jobApplications = sqliteTable("job_applications", {
 	jobRoleId: integer("job_role_id")
 		.notNull()
 		.references(() => jobRoles.id),
+	userId: text("user_id").references(() => authUsers.userId), // Link to authenticated user (optional for guest applications)
 	applicantName: text("applicant_name").notNull(),
 	applicantEmail: text("applicant_email").notNull(),
 	coverLetter: text("cover_letter"),

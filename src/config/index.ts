@@ -24,6 +24,14 @@ interface Config {
 	features: {
 		debugMode: boolean;
 	};
+	session: {
+		secret: string;
+		name: string;
+		maxAge: number; // in milliseconds
+		secure: boolean;
+		httpOnly: boolean;
+		sameSite: "strict" | "lax" | "none";
+	};
 }
 
 /**
@@ -118,6 +126,18 @@ export const config: Config = {
 	},
 	features: {
 		debugMode: parseBoolean(process.env["DEBUG"], false),
+	},
+	session: {
+		secret:
+			process.env["SESSION_SECRET"] || "your-secret-key-change-in-production",
+		name: process.env["SESSION_NAME"] || "job_app_session",
+		maxAge: parseInteger(
+			process.env["SESSION_MAX_AGE"],
+			1000 * 60 * 60 * 24 * 7
+		), // 7 days
+		secure: process.env["NODE_ENV"] === "production", // HTTPS only in production
+		httpOnly: true,
+		sameSite: process.env["NODE_ENV"] === "production" ? "strict" : "lax",
 	},
 };
 

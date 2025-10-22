@@ -16,6 +16,17 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **Biome**: Ultra-fast formatter, linter, and code quality tools
 - **Multer**: File upload middleware for handling CV attachments
 
+### Authentication & Security
+- **Session-Based Authentication**: Secure session management with express-session
+- **Password Hashing**: bcrypt with 12 salt rounds for password security
+- **User Roles**: Admin and Applicant role-based access control
+- **SQLite Session Store**: Sessions persisted in main database
+- **User ID Generation**: Sqids for unique, URL-safe user identifiers
+- **Request Validation**: Zod schemas for runtime type validation
+- **Secure Cookies**: httpOnly, secure, and sameSite cookie settings
+- **Password Requirements**: Enforced strong password policies
+- **CRON Jobs**: Automated session cleanup every hour
+
 ### Job Role Management
 - **Complete CRUD Operations**: Create, Read, Update, Delete job roles
 - **Advanced Search & Filtering**: Full-text search on job role names with multi-criteria filtering
@@ -34,13 +45,12 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **CV Download**: Retrieve uploaded CVs for review and processing
 
 ### Database Features
-- **SQLite Database**: Lightweight, serverless database
-- **Database Migrations**: Version-controlled schema changes
-- **Data Seeding**: Sample data for development and testing
+- **SQLite Database**: Lightweight, serverless database with single file storage
+- **Database Migrations**: Version-controlled schema changes with Drizzle
+- **Data Seeding**: Sample data including test users for development
 - **Type Safety**: Full TypeScript integration with database operations
-
-### Future Enhancements
-> **Note**: Authentication will be added in the next sprint using [better-auth](https://www.better-auth.com/) - a modern, type-safe authentication library for TypeScript applications.
+- **Session Storage**: Sessions stored in main database.sqlite file
+- **User Management**: Secure user accounts with authentication
 
 ## � Job Role API
 ```
@@ -53,30 +63,41 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 │   ├── db/                   # Database configuration and schema
 │   │   ├── index.ts         # Database connection setup
 │   │   └── schema.ts        # Drizzle schema definitions
+│   ├── jobs/                # Scheduled CRON jobs
+│   │   └── cronJobs.ts      # Session cleanup and maintenance tasks
 │   ├── middleware/          # Express middleware
+│   │   ├── auth.ts          # Authentication guards (requireAuth, requireRole)
+│   │   ├── session.ts       # Session configuration
 │   │   └── upload.ts        # Multer configuration for CV uploads
 │   ├── repositories/        # Data access layer
+│   │   ├── userRepository.ts        # User CRUD operations
 │   │   ├── jobRoleRepository.ts
 │   │   └── jobApplicationRepository.ts
 │   ├── routes/              # Express route definitions
 │   │   ├── index.ts         # Main router
+│   │   ├── authRoutes.ts    # Authentication routes
 │   │   ├── jobRoleRoutes.ts
 │   │   └── jobApplicationRoutes.ts
 │   ├── scripts/             # Utility scripts
-│   │   └── seedDatabase.ts  # Database seeding script
+│   │   └── seedDatabase.ts  # Database seeding with test users
 │   ├── types/               # TypeScript type definitions
 │   │   └── jobRole.ts
+│   ├── utils/               # Utility functions
+│   │   ├── password.ts      # Password hashing with bcrypt
+│   │   ├── sqids.ts         # User ID generation
+│   │   └── validation.ts    # Zod validation schemas
 │   └── index.ts             # Main application entry point
 ├── drizzle/                 # Database migration files
 ├── dist/                    # Compiled JavaScript output
 ├── .env.example             # Environment variables template
-├── database.sqlite          # SQLite database file
+├── database.sqlite          # SQLite database file (includes sessions)
 ├── package.json             # Project configuration
 ├── tsconfig.json           # TypeScript configuration
 ├── drizzle.config.ts       # Drizzle ORM configuration
 ├── vitest.config.ts        # Vitest testing configuration
 ├── biome.json              # Biome linter and formatter configuration
-└── API_DOCUMENTATION.md    # Complete API documentation
+├── API_DOCUMENTATION.md    # Complete API documentation
+└── CRON_JOBS.md            # CRON job documentation
 ```
 
 ## 🛠️ Available Scripts
@@ -134,13 +155,18 @@ cp .env.example .env
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `PORT` | Server port number | `3000` | No |
+| `PORT` | Server port number | `8000` | No |
 | `HOST` | Server host address | `localhost` | No |
 | `NODE_ENV` | Environment mode (`development`, `production`, `test`) | `development` | No |
 | `APP_NAME` | Application name | `team2-job-app-backend` | No |
 | `APP_VERSION` | Application version | `1.0.0` | No |
-| `DATABASE_URL` | Path to SQLite database file | `./database.sqlite` | No |
+| `DATABASE_URL` | Path to SQLite database file (includes sessions) | `./database.sqlite` | No |
 | `DEBUG` | Enable debug mode (`true`/`false`) | `false` | No |
+| `SESSION_SECRET` | Session secret key (min 32 chars, generate with crypto) | Random key | Yes (Production) |
+| `SESSION_NAME` | Session cookie name | `job_app_session` | No |
+| `SESSION_MAX_AGE` | Session max age in milliseconds | `604800000` (7 days) | No |
+| `SEED_ADMIN_PASSWORD` | Admin password for database seeding | Default dev password | No |
+| `SEED_APPLICANT_PASSWORD` | Applicant password for database seeding | Default dev password | No |
 
 #### Configuration Best Practices
 
@@ -229,8 +255,16 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 - **CORS**: Cross-Origin Resource Sharing support
 - **Multer**: Middleware for handling multipart/form-data (file uploads)
 
+### Authentication & Security
+- **express-session**: Session management middleware
+- **connect-sqlite3**: SQLite session store for express-session
+- **bcrypt**: Password hashing (12 salt rounds)
+- **Sqids**: Unique, URL-safe user ID generation
+- **Zod**: Runtime type validation and schema validation
+- **node-cron**: Scheduled tasks (session cleanup)
+
 ### Database
-- **SQLite**: Lightweight, serverless database
+- **SQLite**: Lightweight, serverless database (single file storage)
 - **Drizzle ORM**: Type-safe database ORM
 - **better-sqlite3**: Fast SQLite driver for Node.js
 
@@ -264,6 +298,12 @@ This API manages job roles with all required properties for a job portal:
 
 ### Available Endpoints
 
+#### Authentication Endpoints
+- `POST /api/auth/register` - Register new user account
+- `POST /api/auth/login` - Login with email and password
+- `POST /api/auth/logout` - Logout and destroy session (requires authentication)
+- `GET /api/auth/me` - Get current authenticated user (requires authentication)
+
 #### Job Role Endpoints
 - `GET /api/job-roles` - Get all job roles (with filtering & pagination)
 - `GET /api/job-roles/search` - Search and filter job roles with advanced criteria
@@ -278,13 +318,26 @@ This API manages job roles with all required properties for a job portal:
 #### System Endpoints
 - `GET /api/health` - API health check
 
-### Sample Job Roles
-The database comes pre-seeded with sample jobs including:
+### Sample Data
+The database comes pre-seeded with:
+
+**Test Users** (5 accounts):
+- **Admin**: `admin@example.com` (role: Admin)
+- **Applicants**: 
+  - `john.doe@example.com` (role: Applicant)
+  - `jane.smith@example.com` (role: Applicant)
+  - `bob.wilson@example.com` (role: Applicant)
+  - `alice.johnson@example.com` (role: Applicant)
+
+> **Note**: Default passwords are shown in the seed script output. For production, set `SEED_ADMIN_PASSWORD` and `SEED_APPLICANT_PASSWORD` environment variables.
+
+**Sample Job Roles** (75 diverse roles):
 - Senior Software Engineer (Engineering, London)
 - Product Manager (Product, Manchester)  
 - UX Designer (Design, Birmingham)
 - Data Analyst (Analytics, Leeds)
 - DevOps Engineer (Engineering, Remote)
+- And 70 more roles across various capabilities, locations, and bands
 
 ### Job Applications API
 

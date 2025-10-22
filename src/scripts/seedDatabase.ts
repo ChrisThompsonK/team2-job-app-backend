@@ -1,18 +1,111 @@
 #!/usr/bin/env tsx
 
 import { db } from "../db/index";
-import { jobRoles } from "../db/schema";
+import { authUsers, jobRoles } from "../db/schema";
+import { hashPassword } from "../utils/password";
+import { generateUserId } from "../utils/sqids";
 
 async function seedDatabase(): Promise<void> {
 	console.log("🌱 Starting database seeding...");
+
+	const now = new Date();
 
 	try {
 		// Clear existing data first
 		await db.delete(jobRoles);
 		console.log("🧹 Cleared existing job roles");
 
+		await db.delete(authUsers);
+		console.log("🧹 Cleared existing users");
+
+		// Create example users
+		console.log("👥 Creating example users...");
+
+		// Get passwords from environment variables with fallbacks for development
+		const adminPassword =
+			process.env["SEED_ADMIN_PASSWORD"] || "Admin123!DEV_ONLY";
+		const applicantPassword =
+			process.env["SEED_APPLICANT_PASSWORD"] || "SecurePass123!DEV_ONLY";
+
+		// Warn if using default development passwords
+		if (!process.env["SEED_ADMIN_PASSWORD"]) {
+			console.warn(
+				"⚠️  Using default admin password. Set SEED_ADMIN_PASSWORD env var for production."
+			);
+		}
+		if (!process.env["SEED_APPLICANT_PASSWORD"]) {
+			console.warn(
+				"⚠️  Using default applicant password. Set SEED_APPLICANT_PASSWORD env var for production."
+			);
+		}
+
+		const exampleUsers = [
+			{
+				email: "admin@example.com",
+				password: adminPassword,
+				forename: "Admin",
+				surname: "User",
+				role: "Admin" as const,
+			},
+			{
+				email: "john.doe@example.com",
+				password: applicantPassword,
+				forename: "John",
+				surname: "Doe",
+				role: "Applicant" as const,
+			},
+			{
+				email: "jane.smith@example.com",
+				password: applicantPassword,
+				forename: "Jane",
+				surname: "Smith",
+				role: "Applicant" as const,
+			},
+			{
+				email: "bob.wilson@example.com",
+				password: applicantPassword,
+				forename: "Bob",
+				surname: "Wilson",
+				role: "Applicant" as const,
+			},
+			{
+				email: "alice.johnson@example.com",
+				password: applicantPassword,
+				forename: "Alice",
+				surname: "Johnson",
+				role: "Applicant" as const,
+			},
+		];
+
+		const createdUsers = [];
+		for (const user of exampleUsers) {
+			const hashedPassword = await hashPassword(user.password);
+			const [createdUser] = await db
+				.insert(authUsers)
+				.values({
+					userId: generateUserId(),
+					email: user.email.toLowerCase(),
+					password: hashedPassword,
+					forename: user.forename,
+					surname: user.surname,
+					role: user.role,
+					isActive: true,
+					createdAt: now,
+					updatedAt: now,
+				})
+				.returning();
+			createdUsers.push(createdUser);
+		}
+
+		console.log(`✅ Created ${createdUsers.length} example users`);
+		console.log("\n👥 User Accounts Created:");
+		for (const user of exampleUsers) {
+			console.log(
+				`  ${user.role === "Admin" ? "🔐" : "👤"} ${user.email} / ${user.password} (${user.role})`
+			);
+		}
+
 		// Create sample job roles
-		const now = new Date();
 
 		// Helper function to get random element from array
 		const getRandomItem = <T>(array: T[]): T => {
@@ -201,10 +294,9 @@ async function seedDatabase(): Promise<void> {
 		}
 
 		console.log(`✅ Created ${allCreatedJobs.length} job roles`);
-		console.log("🎉 Database seeding completed successfully!");
 
 		// Display summary statistics
-		console.log("\n📊 Job Role Statistics:");
+		console.log("\n📊 Summary Statistics:");
 
 		const statsByCapability = allCreatedJobs.reduce(
 			(acc, job) => {
@@ -249,6 +341,8 @@ async function seedDatabase(): Promise<void> {
 		console.log(
 			`📄 Total pages with limit 12: ${Math.ceil(allCreatedJobs.length / 12)}`
 		);
+
+		console.log("\n🎉 Database seeding completed successfully!");
 	} catch (error) {
 		console.error("❌ Error seeding database:", error);
 		process.exit(1);
