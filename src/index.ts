@@ -9,6 +9,8 @@ import express, {
 	type Response,
 } from "express";
 import { config } from "./config/index";
+import { initializeCronJobs } from "./jobs/cronJobs";
+import { sessionMiddleware } from "./middleware/session";
 import apiRoutes from "./routes/index";
 
 interface AppConfig {
@@ -45,6 +47,9 @@ class App {
 
 		// Add URL-encoded parsing middleware
 		this.server.use(express.urlencoded({ extended: true }));
+
+		// Session middleware (must be after body parsers)
+		this.server.use(sessionMiddleware);
 	}
 
 	private setupRoutes(): void {
@@ -75,6 +80,9 @@ class App {
 			console.log(
 				"✅ Application is running with TypeScript, ES Modules, and Express!"
 			);
+
+			// Initialize CRON jobs after server starts
+			initializeCronJobs();
 		});
 
 		// Handle server errors

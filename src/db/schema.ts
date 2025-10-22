@@ -19,13 +19,33 @@ export const jobRoles = sqliteTable("job_roles", {
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-// Users table - represents job applicants
-export const users = sqliteTable("users", {
-	id: integer("id").primaryKey(),
-	name: text("name").notNull(),
+// Authentication Users table - represents authenticated users (Admins and Applicants)
+export const authUsers = sqliteTable("auth_users", {
+	userId: text("user_id").primaryKey(), // Sqid-generated ID
 	email: text("email").notNull().unique(),
-	role: text("role").notNull().default("user"),
+	password: text("password").notNull(), // bcrypt hashed
+	forename: text("forename").notNull(),
+	surname: text("surname").notNull(),
+	role: text("role", { enum: ["Admin", "Applicant"] })
+		.notNull()
+		.default("Applicant"),
+	isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+	lastLogin: integer("last_login", { mode: "timestamp" }),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+
+// Sessions table - stores user session data for express-session
+export const sessions = sqliteTable("sessions", {
+	sid: text("sid").primaryKey(), // Session ID from express-session
+	userId: text("user_id").references(() => authUsers.userId, {
+		onDelete: "cascade",
+	}),
+	sessionData: text("session_data").notNull(), // JSON serialized session data
+	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	ipAddress: text("ip_address"),
+	userAgent: text("user_agent"),
 });
 
 // Job Applications table - represents individual job applications
@@ -34,6 +54,7 @@ export const jobApplications = sqliteTable("job_applications", {
 	jobRoleId: integer("job_role_id")
 		.notNull()
 		.references(() => jobRoles.id),
+	userId: text("user_id").references(() => authUsers.userId), // Link to authenticated user (optional for guest applications)
 	applicantName: text("applicant_name").notNull(),
 	applicantEmail: text("applicant_email").notNull(),
 	coverLetter: text("cover_letter"),
