@@ -1,21 +1,30 @@
-import { lt } from "drizzle-orm";
+import Database from "better-sqlite3";
 import cron from "node-cron";
-import { db } from "../db/index";
-import { sessions } from "../db/schema";
 
 /**
  * CRON job to clean up expired sessions
  * Runs every hour at the start of the hour (0 * * * *)
+ *
+ * Note: connect-sqlite3 manages the sessions table with columns:
+ * - sid (session ID)
+ * - expired (timestamp)
+ * - sess (JSON session data)
  */
 export function startSessionCleanupJob(): void {
 	cron.schedule("0 * * * *", async () => {
 		try {
 			console.log("🧹 Running session cleanup job...");
 
-			const now = new Date();
-			const result = await db
-				.delete(sessions)
-				.where(lt(sessions.expiresAt, now));
+			// Use better-sqlite3 directly to clean up expired sessions
+			const dbPath = process.env["DATABASE_URL"] || "./database.sqlite";
+			const sqlite = new Database(dbPath);
+
+			const now = Date.now();
+			const result = sqlite
+				.prepare("DELETE FROM sessions WHERE expired < ?")
+				.run(now);
+
+			sqlite.close();
 
 			if (result.changes > 0) {
 				console.log(`✅ Cleaned up ${result.changes} expired sessions`);

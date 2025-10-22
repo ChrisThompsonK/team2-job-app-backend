@@ -35,18 +35,8 @@ export const authUsers = sqliteTable("auth_users", {
 	updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-// Sessions table - stores user session data for express-session
-export const sessions = sqliteTable("sessions", {
-	sid: text("sid").primaryKey(), // Session ID from express-session
-	userId: text("user_id").references(() => authUsers.userId, {
-		onDelete: "cascade",
-	}),
-	sessionData: text("session_data").notNull(), // JSON serialized session data
-	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-	ipAddress: text("ip_address"),
-	userAgent: text("user_agent"),
-});
+// Note: Sessions table is managed automatically by connect-sqlite3
+// The library creates and manages its own 'sessions' table structure
 
 // Job Applications table - represents individual job applications
 export const jobApplications = sqliteTable("job_applications", {
