@@ -204,6 +204,9 @@ export class JobApplicationRepository {
 			status?: string;
 			coverLetter?: string;
 			resumeUrl?: string;
+			cvData?: string;
+			cvFileName?: string;
+			cvMimeType?: string;
 		}
 	): Promise<JobApplicationResponse | null> {
 		const updateData: Partial<typeof jobApplications.$inferInsert> = {
@@ -215,6 +218,11 @@ export class JobApplicationRepository {
 			updateData.coverLetter = updates.coverLetter;
 		if (updates.resumeUrl !== undefined)
 			updateData.resumeUrl = updates.resumeUrl;
+		if (updates.cvData !== undefined) updateData.cvData = updates.cvData;
+		if (updates.cvFileName !== undefined)
+			updateData.cvFileName = updates.cvFileName;
+		if (updates.cvMimeType !== undefined)
+			updateData.cvMimeType = updates.cvMimeType;
 
 		const result = await db
 			.update(jobApplications)
@@ -264,6 +272,55 @@ export class JobApplicationRepository {
 			.limit(1);
 
 		return result.length > 0;
+	}
+
+	/**
+	 * Get all applications submitted by a specific user email
+	 */
+	async getApplicationsByUserEmail(
+		email: string
+	): Promise<JobApplicationResponse[]> {
+		const results = await db
+			.select({
+				application: jobApplications,
+				jobRole: jobRoles,
+			})
+			.from(jobApplications)
+			.leftJoin(jobRoles, eq(jobApplications.jobRoleId, jobRoles.id))
+			.where(eq(jobApplications.applicantEmail, email))
+			.orderBy(desc(jobApplications.submittedAt));
+
+		return results.map((result) => ({
+			id: result.application.id,
+			jobRoleId: result.application.jobRoleId,
+			applicantName: result.application.applicantName,
+			applicantEmail: result.application.applicantEmail,
+			coverLetter: result.application.coverLetter || undefined,
+			resumeUrl: result.application.resumeUrl || undefined,
+			cvFileName: result.application.cvFileName || undefined,
+			cvMimeType: result.application.cvMimeType || undefined,
+			hasCv: !!result.application.cvData,
+			status: result.application.status,
+			submittedAt: new Date(result.application.submittedAt).toISOString(),
+			updatedAt: new Date(result.application.updatedAt).toISOString(),
+			jobRole: result.jobRole
+				? {
+						id: result.jobRole.id,
+						jobRoleName: result.jobRole.jobRoleName,
+						description: result.jobRole.description,
+						responsibilities: result.jobRole.responsibilities,
+						jobSpecLink: result.jobRole.jobSpecLink,
+						location: result.jobRole.location,
+						capability: result.jobRole.capability,
+						band: result.jobRole.band,
+						closingDate: new Date(result.jobRole.closingDate).toISOString(),
+						status: result.jobRole.status,
+						numberOfOpenPositions: result.jobRole.numberOfOpenPositions,
+						createdAt: new Date(result.jobRole.createdAt).toISOString(),
+						updatedAt: new Date(result.jobRole.updatedAt).toISOString(),
+					}
+				: undefined,
+		}));
 	}
 }
 

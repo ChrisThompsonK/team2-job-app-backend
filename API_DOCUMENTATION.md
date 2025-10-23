@@ -563,31 +563,115 @@ Content-Disposition: attachment; filename="resume.pdf"
 Content-Length: 245678
 ```
 
-### 5. Update Application Status
+### 5. Update Application
 ```http
 PUT /api/applications/:id
+Content-Type: multipart/form-data
 ```
 
-Update an application's status or other fields.
+Update an existing application's cover letter and/or CV file. Applications can only be updated while in editable status.
 
-**Request Body:**
-- `status` (optional): New status value
-- `coverLetter` (optional): Updated cover letter
-- `resumeUrl` (optional): Updated resume URL
+**URL Parameters:**
+- `id` (number, required): The unique identifier of the application to update
 
-**Valid Status Values:**
-- `in progress`
+**Form Data Fields:**
+- `coverLetter` (string, optional): Updated cover letter text (max 5000 characters)
+- `cv` (file, optional): New CV file to replace existing one (PDF, DOC, or DOCX, max 5MB)
+
+**Editable Statuses:**
+Applications can only be updated if their current status is:
 - `pending`
+- `in progress`
 - `under_review`
-- `shortlisted`
-- `rejected`
-- `hired`
 
-**Example Request:**
+**Notes:**
+- At least one field (`coverLetter` or `cv`) must be provided
+- If `cv` is not provided, the existing CV remains unchanged
+- If `coverLetter` is not provided, the existing cover letter remains unchanged
+- The `applicantName`, `applicantEmail`, and `jobRoleId` cannot be changed via this endpoint
+- `submittedAt` remains unchanged; `updatedAt` is set to current timestamp
+
+**Example Request (Update Cover Letter Only):**
 ```bash
 curl -X PUT "http://localhost:3000/api/applications/1" \
-  -H "Content-Type: application/json" \
-  -d '{"status": "under_review"}'
+  -F "coverLetter=I am excited to apply for this position. I have 5 years of experience..."
+```
+
+**Example Request (Update CV Only):**
+```bash
+curl -X PUT "http://localhost:3000/api/applications/1" \
+  -F "cv=@/path/to/updated_resume.pdf"
+```
+
+**Example Request (Update Both):**
+```bash
+curl -X PUT "http://localhost:3000/api/applications/1" \
+  -F "coverLetter=Updated cover letter text..." \
+  -F "cv=@/path/to/new_cv.pdf"
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Application updated successfully",
+  "data": {
+    "id": 1,
+    "jobRoleId": 63,
+    "applicantName": "John Doe",
+    "applicantEmail": "john.doe@example.com",
+    "coverLetter": "Updated cover letter text...",
+    "cvFileName": "new_cv.pdf",
+    "cvMimeType": "application/pdf",
+    "hasCv": true,
+    "status": "in progress",
+    "submittedAt": "2025-10-23T10:23:17.000Z",
+    "updatedAt": "2025-10-23T15:30:00.000Z",
+    "jobRole": {
+      "id": 63,
+      "jobRoleName": "Senior Product Designer",
+      "description": "...",
+      "location": "Paris, France",
+      "capability": "Design",
+      "band": "Senior",
+      "closingDate": "2026-01-21T14:54:25.000Z",
+      "status": "Open",
+      "numberOfOpenPositions": 2
+    }
+  }
+}
+```
+
+**Error Response (403 Forbidden - Non-Editable Status):**
+```json
+{
+  "success": false,
+  "message": "Applications can only be updated while in 'pending', 'in progress', or 'under_review' status"
+}
+```
+
+**Error Response (400 Bad Request - No Updates Provided):**
+```json
+{
+  "success": false,
+  "message": "No updates provided. Please provide a cover letter or CV file to update."
+}
+```
+
+**Error Response (400 Bad Request - Invalid File Type):**
+```json
+{
+  "success": false,
+  "message": "Invalid file type. Only PDF, DOC, and DOCX files are allowed"
+}
+```
+
+**Error Response (404 Not Found):**
+```json
+{
+  "success": false,
+  "message": "Application not found"
+}
 ```
 
 ### 6. Get Applications for Job Role
@@ -602,7 +686,123 @@ Retrieve all applications for a specific job role.
 curl "http://localhost:3000/api/applications/job-role/1"
 ```
 
-### 7. Delete Application
+### 7. Get Applications by User Email
+```http
+GET /api/applications/user/:email
+```
+
+Retrieve all job applications submitted by a user identified by their email address. Returns applications ordered by submission date (newest first).
+
+**URL Parameters:**
+- `email` (string, required): The applicant's email address (URL-encoded)
+
+**Example Request:**
+```bash
+# Note: @ symbol must be URL-encoded as %40
+curl "http://localhost:3000/api/applications/user/john.doe%40example.com"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "jobRoleId": 5,
+      "applicantName": "John Doe",
+      "applicantEmail": "john.doe@example.com",
+      "coverLetter": "I am very interested in this position because...",
+      "resumeUrl": "http://localhost:8000/uploads/cvs/application-1-cv.pdf",
+      "hasCv": true,
+      "cvFileName": "john_doe_cv.pdf",
+      "cvMimeType": "application/pdf",
+      "status": "pending",
+      "submittedAt": "2025-10-23T10:30:00.000Z",
+      "updatedAt": "2025-10-23T10:30:00.000Z",
+      "jobRole": {
+        "id": 5,
+        "jobRoleName": "Software Engineer",
+        "description": "We are looking for a talented software engineer...",
+        "responsibilities": "Design, develop, and maintain software applications...",
+        "jobSpecLink": "https://example.com/job-specs/software-engineer.pdf",
+        "location": "Belfast",
+        "capability": "Engineering",
+        "band": "Associate",
+        "closingDate": "2025-11-30T00:00:00.000Z",
+        "status": "open",
+        "numberOfOpenPositions": 3,
+        "createdAt": "2025-10-01T00:00:00.000Z",
+        "updatedAt": "2025-10-01T00:00:00.000Z"
+      }
+    },
+    {
+      "id": 2,
+      "jobRoleId": 8,
+      "applicantName": "John Doe",
+      "applicantEmail": "john.doe@example.com",
+      "coverLetter": null,
+      "resumeUrl": "http://localhost:8000/uploads/cvs/application-2-cv.pdf",
+      "hasCv": true,
+      "cvFileName": "john_doe_cv_updated.pdf",
+      "cvMimeType": "application/pdf",
+      "status": "under_review",
+      "submittedAt": "2025-10-20T14:15:00.000Z",
+      "updatedAt": "2025-10-21T09:00:00.000Z",
+      "jobRole": {
+        "id": 8,
+        "jobRoleName": "Senior Developer",
+        "description": "...",
+        "responsibilities": "...",
+        "jobSpecLink": "...",
+        "location": "London",
+        "capability": "Engineering",
+        "band": "Consultant",
+        "closingDate": "2025-12-15T00:00:00.000Z",
+        "status": "open",
+        "numberOfOpenPositions": 2,
+        "createdAt": "2025-09-15T00:00:00.000Z",
+        "updatedAt": "2025-09-15T00:00:00.000Z"
+      }
+    }
+  ]
+}
+```
+
+**Response for User with No Applications:**
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "success": false,
+  "message": "Invalid email format",
+  "error": "Email parameter is required and must be valid"
+}
+```
+
+**Error Response (500 Internal Server Error):**
+```json
+{
+  "success": false,
+  "message": "Failed to fetch user applications",
+  "error": "Database connection error"
+}
+```
+
+**Notes:**
+- Email parameter must be URL-encoded (e.g., `@` becomes `%40`)
+- Results are ordered by `submittedAt` in descending order (newest first)
+- Each application includes nested job role details
+- Returns empty array if user has no applications
+- Frontend can use this endpoint for "My Applications" features
+
+### 8. Delete Application
 ```http
 DELETE /api/applications/:id
 ```

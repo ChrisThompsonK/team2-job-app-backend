@@ -348,15 +348,17 @@ The application system allows users to apply for job roles with CV upload:
 - **CV Required**: All applications must include a CV file (PDF, DOC, or DOCX)
 - **File Size Limit**: Maximum CV file size is 5MB
 - **Status**: Applications are automatically set to "in progress" upon submission
+- **Editable Applications**: Applications can be updated (cover letter/CV) while in "pending", "in progress", or "under_review" status
 
 #### Application Endpoints
 - `POST /api/applications` - Submit job application with CV (multipart/form-data)
 - `GET /api/applications` - Get all applications (with filtering)
 - `GET /api/applications/:id` - Get specific application
 - `GET /api/applications/:id/cv` - Download application CV
-- `PUT /api/applications/:id` - Update application status
-- `DELETE /api/applications/:id` - Delete application
+- `GET /api/applications/user/:email` - Get all applications by user email (URL-encoded)
 - `GET /api/applications/job-role/:jobRoleId` - Get applications for specific job role
+- `PUT /api/applications/:id` - Update application cover letter and/or CV (multipart/form-data)
+- `DELETE /api/applications/:id` - Delete application
 
 #### Applying for a Job (multipart/form-data)
 ```bash
@@ -366,6 +368,28 @@ curl -X POST http://localhost:3000/api/applications \
   -F "applicantName=John Doe" \
   -F "applicantEmail=john@example.com" \
   -F "coverLetter=I am interested in this position..."
+```
+
+#### Update an Application (multipart/form-data)
+```bash
+# Update cover letter only
+curl -X PUT http://localhost:3000/api/applications/1 \
+  -F "coverLetter=Updated cover letter text..."
+
+# Update CV only
+curl -X PUT http://localhost:3000/api/applications/1 \
+  -F "cv=@/path/to/updated_resume.pdf"
+
+# Update both
+curl -X PUT http://localhost:3000/api/applications/1 \
+  -F "coverLetter=Updated text..." \
+  -F "cv=@/path/to/new_cv.pdf"
+```
+
+#### Get User's Applications
+```bash
+# Note: @ symbol must be URL-encoded as %40
+curl "http://localhost:3000/api/applications/user/john.doe%40example.com"
 ```
 
 #### Download CV

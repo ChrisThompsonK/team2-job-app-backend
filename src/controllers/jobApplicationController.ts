@@ -245,6 +245,32 @@ export async function updateApplication(
 			return;
 		}
 
+		// Get CV file if uploaded
+		const cvFile = (req as Express.Request & { file?: Express.Multer.File })
+			.file;
+
+		// Get the existing application first
+		const existingApplication =
+			await jobApplicationRepository.getApplicationById(applicationId);
+
+		if (!existingApplication) {
+			res.status(404).json({
+				success: false,
+				message: "Application not found",
+			});
+			return;
+		}
+
+		// Check if application can be edited (only certain statuses are editable)
+		const editableStatuses = ["pending", "in progress", "under_review"];
+		if (!editableStatuses.includes(existingApplication.status.toLowerCase())) {
+			res.status(403).json({
+				success: false,
+				message: `Applications can only be updated while in 'pending', 'in progress', or 'under_review' status`,
+			});
+			return;
+		}
+
 		const updates = req.body;
 
 		// Validate status if provided
@@ -266,9 +292,53 @@ export async function updateApplication(
 			}
 		}
 
+		// Prepare update data
+		const updateData: {
+			status?: string;
+			coverLetter?: string;
+			resumeUrl?: string;
+			cvData?: string;
+			cvFileName?: string;
+			cvMimeType?: string;
+		} = {};
+
+		// Update fields from request body
+		if (updates.status !== undefined) {
+			updateData.status = updates.status;
+		}
+		if (updates.coverLetter !== undefined) {
+			updateData.coverLetter = updates.coverLetter;
+		}
+		if (updates.resumeUrl !== undefined) {
+			updateData.resumeUrl = updates.resumeUrl;
+		}
+
+		// Handle CV file upload if provided
+		if (cvFile) {
+			// Convert CV buffer to base64 string for storage
+			const cvBase64 = cvFile.buffer.toString("base64");
+			updateData.cvData = cvBase64;
+			updateData.cvFileName = cvFile.originalname;
+			updateData.cvMimeType = cvFile.mimetype;
+		}
+
+		// Check if at least one field is being updated
+		if (
+			Object.keys(updateData).length === 0 &&
+			!cvFile &&
+			!updates.coverLetter
+		) {
+			res.status(400).json({
+				success: false,
+				message:
+					"No updates provided. Please provide a cover letter or CV file to update.",
+			});
+			return;
+		}
+
 		const updatedApplication = await jobApplicationRepository.updateApplication(
 			applicationId,
-			updates
+			updateData
 		);
 
 		if (!updatedApplication) {
@@ -429,6 +499,48 @@ export async function downloadCv(
 		res.status(500).json({
 			success: false,
 			error: "Internal server error",
+		});
+	}
+}
+
+/**
+ * Get all applications submitted by a specific user email
+ */
+export async function getApplicationsByUserEmail(
+	req: Request<{ email: string }>,
+	res: Response<ApiResponse<JobApplicationResponse[]>>
+): Promise<void> {
+	try {
+		const { email } = req.params;
+
+		// URL decode the email parameter
+		const decodedEmail = decodeURIComponent(email);
+
+		// Validate email format
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(decodedEmail)) {
+			res.status(400).json({
+				success: false,
+				message: "Invalid email format",
+				error: "Email parameter is required and must be valid",
+			});
+			return;
+		}
+
+		// Get applications for the user
+		const applications =
+			await jobApplicationRepository.getApplicationsByUserEmail(decodedEmail);
+
+		res.json({
+			success: true,
+			data: applications,
+		});
+	} catch (error) {
+		console.error("Error fetching user applications:", error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to fetch user applications",
+			error: "Database connection error",
 		});
 	}
 }
