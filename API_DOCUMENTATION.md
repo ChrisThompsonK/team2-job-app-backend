@@ -7,6 +7,22 @@ This API provides endpoints to manage job roles for a job portal system. Each jo
 http://localhost:3000/api
 ```
 
+## Authentication
+
+### Header-Based Authentication
+Some endpoints (e.g., withdraw application) require authentication via the `X-User-Email` header:
+
+```http
+X-User-Email: user@example.com
+```
+
+**How it works:**
+1. The frontend server authenticates the user (via session, JWT, etc.)
+2. The frontend server includes the authenticated user's email in the `X-User-Email` header when making requests to the backend
+3. The backend verifies the user's email matches the resource owner (e.g., application owner)
+
+**Security Note:** This approach is suitable for development environments where the frontend and backend are trusted. For production, consider implementing JWT tokens, API keys, or OAuth 2.0.
+
 ## Data Models
 
 ### Job Role
@@ -802,17 +818,131 @@ curl "http://localhost:3000/api/applications/user/john.doe%40example.com"
 - Returns empty array if user has no applications
 - Frontend can use this endpoint for "My Applications" features
 
-### 8. Delete Application
+### 8. Withdraw Application
 ```http
 DELETE /api/applications/:id
 ```
 
-Delete a job application.
+Withdraw a job application by changing its status to "withdrawn". Only the application owner can withdraw their own application, and only applications with status 'pending', 'under_review', or 'in progress' can be withdrawn.
+
+**Authentication Required**: Yes (via `X-User-Email` header)
+
+**Path Parameters:**
+- `id`: Application ID (integer)
+
+**Headers:**
+- `X-User-Email` (required): Email address of the authenticated user making the request
+
+**Withdrawable Statuses:**
+- `pending`
+- `under_review`
+- `in progress`
+
+**Non-Withdrawable Statuses:**
+- `withdrawn` (already withdrawn)
+- `accepted` (application has been accepted)
+- `rejected` (application has been rejected)
 
 **Example Request:**
 ```bash
-curl -X DELETE "http://localhost:3000/api/applications/1"
+curl -X DELETE "http://localhost:3000/api/applications/42" \
+  -H "X-User-Email: john.doe@example.com"
 ```
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 42,
+    "jobRoleId": 10,
+    "applicantName": "John Doe",
+    "applicantEmail": "john.doe@example.com",
+    "coverLetter": "I am very interested in this position...",
+    "resumeUrl": "/uploads/cv_42_resume.pdf",
+    "hasCv": true,
+    "cvFileName": "john_doe_resume.pdf",
+    "cvMimeType": "application/pdf",
+    "status": "withdrawn",
+    "submittedAt": "2025-10-20T14:30:00.000Z",
+    "updatedAt": "2025-10-24T10:15:00.000Z",
+    "jobRole": {
+      "id": 10,
+      "jobRoleName": "Software Engineer",
+      "description": "Backend development position",
+      "responsibilities": "Develop and maintain APIs",
+      "jobSpecLink": "https://example.com/specs/software-engineer",
+      "location": "Belfast",
+      "capability": "Engineering",
+      "band": "Senior",
+      "closingDate": "2025-11-15T23:59:59.000Z",
+      "status": "open",
+      "numberOfOpenPositions": 3,
+      "createdAt": "2025-10-01T09:00:00.000Z",
+      "updatedAt": "2025-10-01T09:00:00.000Z"
+    }
+  }
+}
+```
+
+**Error Responses:**
+
+**400 Bad Request - Invalid Application ID:**
+```json
+{
+  "success": false,
+  "message": "Invalid application ID"
+}
+```
+
+**400 Bad Request - Cannot Withdraw:**
+```json
+{
+  "success": false,
+  "message": "This application cannot be withdrawn. Only applications with status 'pending', 'under_review', or 'in progress' can be withdrawn."
+}
+```
+
+**401 Unauthorized - Missing or Invalid Authentication:**
+```json
+{
+  "success": false,
+  "error": "Unauthorized",
+  "message": "You must be logged in to access this resource"
+}
+```
+
+**403 Forbidden - Not Application Owner:**
+```json
+{
+  "success": false,
+  "message": "You do not have permission to withdraw this application"
+}
+```
+
+**404 Not Found - Application Not Found:**
+```json
+{
+  "success": false,
+  "message": "Application not found"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "success": false,
+  "message": "An error occurred while withdrawing the application"
+}
+```
+
+**Important Notes:**
+- The application record remains in the database, only the status changes to "withdrawn"
+- The `updatedAt` timestamp is automatically updated to the current time
+- All other application data (name, email, CV, cover letter, etc.) remains unchanged
+- Only the authenticated user who submitted the application can withdraw it
+- Authentication is done via the `X-User-Email` header (user email must match `applicantEmail`)
+- The `X-User-Email` header should be set by the frontend server after user authentication
 
 ## Application Workflow
 
@@ -821,6 +951,7 @@ curl -X DELETE "http://localhost:3000/api/applications/1"
 2. **Prepare CV**: File must be PDF, DOC, or DOCX (max 5MB)
 3. **Submit Application**: Use multipart/form-data POST request
 4. **Track Status**: Application starts as `"in progress"`
+5. **Withdraw if Needed**: Can withdraw application if status is pending, under_review, or in progress
 
 ### For Recruiters
 1. **Review Applications**: GET all applications for a job role
@@ -833,6 +964,9 @@ curl -X DELETE "http://localhost:3000/api/applications/1"
 ### Application-Specific Errors
 - `400` - CV file required / Invalid file type / File too large
 - `400` - Job role not accepting applications (not "open" or no positions)
+- `400` - Application cannot be withdrawn (invalid status)
+- `401` - Unauthorized (authentication required for withdraw)
+- `403` - Forbidden (user does not own the application)
 - `404` - Job role not found / Application not found
 - `409` - Already applied for this job role
 - `500` - Internal server error

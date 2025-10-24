@@ -407,6 +407,99 @@ export async function deleteApplication(
 }
 
 /**
+ * Withdraw a job application (change status to withdrawn)
+ * Only the application owner can withdraw their own application
+ * Only applications with status 'pending', 'under_review', or 'in progress' can be withdrawn
+ */
+export async function withdrawApplication(
+	req: Request<{ id: string }>,
+	res: Response<ApiResponse<JobApplicationResponse>>
+): Promise<void> {
+	try {
+		const { id } = req.params;
+		const applicationId = Number.parseInt(id, 10);
+
+		// Validate application ID
+		if (Number.isNaN(applicationId)) {
+			res.status(400).json({
+				success: false,
+				message: "Invalid application ID",
+			});
+			return;
+		}
+
+		// Get authenticated user's email from X-User-Email header
+		const userEmail = req.headers["x-user-email"] as string | undefined;
+		if (!userEmail) {
+			res.status(401).json({
+				success: false,
+				error: "Unauthorized",
+				message: "You must be logged in to access this resource",
+			});
+			return;
+		}
+
+		// Validate email format
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(userEmail)) {
+			res.status(401).json({
+				success: false,
+				error: "Unauthorized",
+				message: "Invalid email format",
+			});
+			return;
+		}
+
+		// Withdraw the application
+		const withdrawnApplication =
+			await jobApplicationRepository.withdrawApplication(
+				applicationId,
+				userEmail
+			);
+
+		if (!withdrawnApplication) {
+			res.status(404).json({
+				success: false,
+				message: "Application not found",
+			});
+			return;
+		}
+
+		res.json({
+			success: true,
+			data: withdrawnApplication,
+		});
+	} catch (error) {
+		console.error("Error withdrawing application:", error);
+
+		// Handle specific error cases
+		if (error instanceof Error) {
+			if (error.message === "FORBIDDEN") {
+				res.status(403).json({
+					success: false,
+					message: "You do not have permission to withdraw this application",
+				});
+				return;
+			}
+
+			if (error.message === "CANNOT_WITHDRAW") {
+				res.status(400).json({
+					success: false,
+					message:
+						"This application cannot be withdrawn. Only applications with status 'pending', 'under_review', or 'in progress' can be withdrawn.",
+				});
+				return;
+			}
+		}
+
+		res.status(500).json({
+			success: false,
+			message: "An error occurred while withdrawing the application",
+		});
+	}
+}
+
+/**
  * Get applications for a specific job role
  */
 export async function getApplicationsByJobRole(

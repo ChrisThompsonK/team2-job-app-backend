@@ -1,13 +1,13 @@
 import { Router } from "express";
 import {
 	createApplication,
-	deleteApplication,
 	downloadCv,
 	getAllApplications,
 	getApplicationById,
 	getApplicationsByJobRole,
 	getApplicationsByUserEmail,
 	updateApplication,
+	withdrawApplication,
 } from "../controllers/jobApplicationController";
 import { upload } from "../middleware/upload";
 
@@ -37,7 +37,7 @@ router.post("/", upload.single("cv"), createApplication);
 // PUT /api/applications/:id - Update an application (with optional CV upload)
 router.put("/:id", upload.single("cv"), updateApplication);
 
-// DELETE /api/applications/:id - Delete an application
-router.delete("/:id", deleteApplication);
+// DELETE /api/applications/:id - Withdraw an application (uses X-User-Email header for authentication)
+router.delete("/:id", withdrawApplication);
 
 export default router;
