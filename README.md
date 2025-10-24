@@ -41,8 +41,10 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **Binary Storage**: CVs stored as base64-encoded data in SQLite database
 - **File Validation**: Automatic validation of file types and size limits (5MB max)
 - **Application Tracking**: Applications automatically set to "in progress" status on submission
+- **Application Withdrawal**: Users can withdraw their own applications (changes status to "withdrawn")
 - **Eligibility Verification**: Validates open positions and job role status before accepting applications
 - **CV Download**: Retrieve uploaded CVs for review and processing
+- **User Authorization**: Only application owners can withdraw their applications
 
 ### Database Features
 - **SQLite Database**: Lightweight, serverless database with single file storage
@@ -358,7 +360,7 @@ The application system allows users to apply for job roles with CV upload:
 - `GET /api/applications/user/:email` - Get all applications by user email (URL-encoded)
 - `GET /api/applications/job-role/:jobRoleId` - Get applications for specific job role
 - `PUT /api/applications/:id` - Update application cover letter and/or CV (multipart/form-data)
-- `DELETE /api/applications/:id` - Delete application
+- `DELETE /api/applications/:id` - Withdraw application (requires X-User-Email header, changes status to "withdrawn")
 
 #### Applying for a Job (multipart/form-data)
 ```bash
@@ -396,6 +398,35 @@ curl "http://localhost:3000/api/applications/user/john.doe%40example.com"
 ```bash
 curl http://localhost:3000/api/applications/1/cv --output cv.pdf
 ```
+
+#### Withdraw Application
+```bash
+# User must provide their email in the X-User-Email header
+# Only the application owner can withdraw their own application
+# Only applications with status 'pending', 'under_review', or 'in progress' can be withdrawn
+curl -X DELETE http://localhost:3000/api/applications/42 \
+  -H "X-User-Email: john.doe@example.com"
+```
+
+**Withdrawable Statuses:**
+- `pending`
+- `under_review`
+- `in progress`
+
+**Non-Withdrawable Statuses:**
+- `withdrawn` (already withdrawn)
+- `accepted` (application has been accepted)
+- `rejected` (application has been rejected)
+
+**Authentication via Header:**
+- The `X-User-Email` header must contain the authenticated user's email address
+- The frontend server should set this header after user authentication
+- The email in the header must match the `applicantEmail` of the application
+
+**Important Notes:**
+- The application record remains in the database, only the status changes to "withdrawn"
+- All other application data (name, email, CV, cover letter) remains unchanged
+- Only the application owner (matching email) can withdraw their own application
 
 📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
 

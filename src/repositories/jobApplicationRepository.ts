@@ -248,6 +248,48 @@ export class JobApplicationRepository {
 	}
 
 	/**
+	 * Withdraw a job application (change status to withdrawn)
+	 * Only applications with status 'pending', 'under_review', or 'in progress' can be withdrawn
+	 */
+	async withdrawApplication(
+		id: number,
+		userEmail: string
+	): Promise<JobApplicationResponse | null> {
+		// First, get the application to check its current state
+		const application = await this.getApplicationById(id);
+
+		if (!application) {
+			return null;
+		}
+
+		// Check if the user owns this application
+		if (application.applicantEmail !== userEmail) {
+			throw new Error("FORBIDDEN");
+		}
+
+		// Check if the application can be withdrawn based on its status
+		const withdrawableStatuses = ["pending", "under_review", "in progress"];
+		if (!withdrawableStatuses.includes(application.status)) {
+			throw new Error("CANNOT_WITHDRAW");
+		}
+
+		// Update the status to withdrawn
+		const result = await db
+			.update(jobApplications)
+			.set({
+				status: "withdrawn",
+				updatedAt: new Date(),
+			})
+			.where(eq(jobApplications.id, id))
+			.returning();
+
+		if (!result[0]) return null;
+
+		// Return the updated application with job role details
+		return await this.getApplicationById(id);
+	}
+
+	/**
 	 * Get applications for a specific job role
 	 */
 	async getApplicationsByJobRole(
