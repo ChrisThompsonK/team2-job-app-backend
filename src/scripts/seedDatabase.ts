@@ -43,8 +43,8 @@ async function seedDatabase(): Promise<void> {
 			{
 				email: "admin@example.com",
 				password: adminPassword,
-				forename: "Admin",
-				surname: "User",
+				forename: "Chris",
+				surname: "Thompson",
 				role: "Admin" as const,
 			},
 			{
