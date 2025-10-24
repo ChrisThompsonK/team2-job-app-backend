@@ -52,7 +52,7 @@ async function testWithdrawApplication() {
 			},
 		});
 
-		const data: ApiResponse<JobApplication> = await response.json();
+		const data = (await response.json()) as ApiResponse<JobApplication>;
 
 		if (response.ok && data.success) {
 			console.log("✅ Success!");
@@ -87,12 +87,11 @@ async function testWithdrawApplication() {
 			},
 		});
 
-		const data: ApiResponse<JobApplication> = await response.json();
+		const data = (await response.json()) as ApiResponse<JobApplication>;
 
 		console.log(`Status: ${response.status} ${response.statusText}`);
 		console.log(`Expected: 401 Unauthorized`);
 		console.log(`Message: ${data.message || data.error}`);
-
 		if (response.status === 401) {
 			console.log("✅ Correctly rejected unauthenticated request");
 		} else {
@@ -120,7 +119,7 @@ async function testWithdrawApplication() {
 			},
 		});
 
-		const data: ApiResponse<JobApplication> = await response.json();
+		const data = (await response.json()) as ApiResponse<JobApplication>;
 
 		console.log(`Status: ${response.status} ${response.statusText}`);
 		console.log(`Expected: 403 Forbidden`);
@@ -154,12 +153,11 @@ async function testWithdrawApplication() {
 			},
 		});
 
-		const data: ApiResponse<JobApplication> = await response.json();
+		const data = (await response.json()) as ApiResponse<JobApplication>;
 
 		console.log(`Status: ${response.status} ${response.statusText}`);
 		console.log(`Expected: 400 Bad Request`);
 		console.log(`Message: ${data.message || data.error}`);
-
 		if (response.status === 400) {
 			console.log("✅ Correctly rejected invalid ID");
 		} else {
@@ -188,12 +186,11 @@ async function testWithdrawApplication() {
 			},
 		});
 
-		const data: ApiResponse<JobApplication> = await response.json();
+		const data = (await response.json()) as ApiResponse<JobApplication>;
 
 		console.log(`Status: ${response.status} ${response.statusText}`);
 		console.log(`Expected: 404 Not Found`);
 		console.log(`Message: ${data.message || data.error}`);
-
 		if (response.status === 404) {
 			console.log("✅ Correctly returned 404 for non-existent application");
 		} else {
@@ -203,7 +200,7 @@ async function testWithdrawApplication() {
 		console.error("❌ Error:", error);
 	}
 
-	console.log("\n" + "=".repeat(60));
+	console.log(`\n${"=".repeat(60)}`);
 	console.log("🧪 Withdraw Application Tests Complete\n");
 	console.log("📝 Notes:");
 	console.log("  - Make sure the server is running on http://localhost:8000");
