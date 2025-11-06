@@ -197,13 +197,19 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				surname: "Tester",
 			};
 
-			await fetch(`http://localhost:${TEST_PORT}/api/auth/register`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(loginTestUser),
-			});
+			const registerResponse = await fetch(
+				`http://localhost:${TEST_PORT}/api/auth/register`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(loginTestUser),
+				}
+			);
+
+			// Ensure registration was successful before attempting login
+			expect(registerResponse.status).toBe(201);
 
 			// Now attempt login
 			const loginResponse = await fetch(
@@ -220,6 +226,12 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				}
 			);
 
+			// Log response for debugging if it fails
+			if (loginResponse.status !== 200) {
+				const errorData = await loginResponse.json();
+				console.error("Login failed:", errorData);
+			}
+
 			expect(loginResponse.status).toBe(200);
 
 			const data = (await loginResponse.json()) as ApiResponse;
@@ -230,6 +242,23 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 		});
 
 		it("should return 401 Unauthorized with invalid credentials", async () => {
+			// First register a user for this test
+			const invalidLoginUser = {
+				email: getUniqueEmail("invalid-login-test"),
+				password: "CorrectPassword123!",
+				forename: "Invalid",
+				surname: "Login",
+			};
+
+			await fetch(`http://localhost:${TEST_PORT}/api/auth/register`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(invalidLoginUser),
+			});
+
+			// Try to login with wrong password
 			const response = await fetch(
 				`http://localhost:${TEST_PORT}/api/auth/login`,
 				{
@@ -238,11 +267,17 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
-						email: testUser.email,
+						email: invalidLoginUser.email,
 						password: "WrongPassword123!",
 					}),
 				}
 			);
+
+			// Log response for debugging if it fails
+			if (response.status !== 401) {
+				const errorData = await response.json();
+				console.error("Expected 401, got:", response.status, errorData);
+			}
 
 			expect(response.status).toBe(401);
 
@@ -260,11 +295,17 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
-						email: "nonexistent@example.com",
+						email: getUniqueEmail("nonexistent"),
 						password: "SomePassword123!",
 					}),
 				}
 			);
+
+			// Log response for debugging if it fails
+			if (response.status !== 401) {
+				const errorData = await response.json();
+				console.error("Expected 401, got:", response.status, errorData);
+			}
 
 			expect(response.status).toBe(401);
 
@@ -357,6 +398,12 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				}
 			);
 
+			// Log response for debugging if it fails
+			if (registerResponse.status !== 201) {
+				const errorData = await registerResponse.json();
+				console.error("Registration failed:", errorData);
+			}
+
 			expect(registerResponse.status).toBe(201);
 			const registerData = (await registerResponse.json()) as ApiResponse;
 			expect(registerData.user?.email).toBe(flowTestUser.email);
@@ -375,6 +422,12 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 					}),
 				}
 			);
+
+			// Log response for debugging if it fails
+			if (loginResponse.status !== 200) {
+				const errorData = await loginResponse.json();
+				console.error("Login failed:", errorData);
+			}
 
 			expect(loginResponse.status).toBe(200);
 			const loginData = (await loginResponse.json()) as ApiResponse;
