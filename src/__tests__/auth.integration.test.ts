@@ -1,11 +1,24 @@
-import type { Server } from "http";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import type { Server } from "node:http";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { App, type AppConfig } from "../index";
 
 /**
  * Integration tests for authentication API endpoints
  * Tests HTTP status codes for user registration and login flows
  */
+
+// Type definitions for API responses
+interface ApiResponse {
+	message?: string;
+	error?: string;
+	user?: {
+		email: string;
+		forename: string;
+		surname: string;
+		id?: string;
+	};
+	details?: unknown[];
+}
 
 // Test configuration
 const TEST_PORT = 3001;
@@ -29,23 +42,8 @@ const testUser = {
 	surname: "Tester",
 };
 
-const anotherTestUser = {
-	email: getUniqueEmail("another-test"),
-	password: "AnotherSecure456!",
-	forename: "Another",
-	surname: "User",
-};
-
-const invalidTestUser = {
-	email: "invalid-email",
-	password: "weak",
-	forename: "Invalid",
-	surname: "User",
-};
-
 let app: App;
 let server: Server;
-let sessionCookie: string = "";
 
 describe("Authentication Integration Tests - HTTP Status Codes", () => {
 	beforeAll(async () => {
@@ -82,18 +80,12 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(201);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("message", "User registered successfully");
 			expect(data).toHaveProperty("user");
 			expect(data.user).toHaveProperty("email", testUser.email);
 			expect(data.user).toHaveProperty("forename", testUser.forename);
 			expect(data.user).toHaveProperty("surname", testUser.surname);
-
-			// Store session cookie for login tests
-			const setCookie = response.headers.get("set-cookie");
-			if (setCookie) {
-				sessionCookie = setCookie.split(";")[0];
-			}
 		});
 
 		it("should return 409 Conflict when user already exists", async () => {
@@ -111,7 +103,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(409);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "User already exists");
 			expect(data).toHaveProperty(
 				"message",
@@ -140,7 +132,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "Validation failed");
 			expect(data).toHaveProperty("details");
 			expect(Array.isArray(data.details)).toBe(true);
@@ -167,7 +159,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error");
 		});
 
@@ -190,7 +182,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 	});
@@ -230,7 +222,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(loginResponse.status).toBe(200);
 
-			const data = (await loginResponse.json()) as any;
+			const data = (await loginResponse.json()) as ApiResponse;
 			expect(data).toHaveProperty("message", "Login successful");
 			expect(data).toHaveProperty("user");
 			expect(data.user).toHaveProperty("email", loginTestUser.email);
@@ -254,7 +246,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(401);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "Invalid credentials");
 			expect(data).toHaveProperty("message", "Email or password is incorrect");
 		});
@@ -276,7 +268,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(401);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "Invalid credentials");
 		});
 
@@ -297,7 +289,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 
@@ -318,7 +310,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 
@@ -339,7 +331,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = (await response.json()) as any;
+			const data = (await response.json()) as ApiResponse;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 	});
@@ -366,8 +358,8 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			);
 
 			expect(registerResponse.status).toBe(201);
-			const registerData = (await registerResponse.json()) as any;
-			expect(registerData.user.email).toBe(flowTestUser.email);
+			const registerData = (await registerResponse.json()) as ApiResponse;
+			expect(registerData.user?.email).toBe(flowTestUser.email);
 
 			// Step 2: Login with registered credentials - expect 200
 			const loginResponse = await fetch(
@@ -385,8 +377,8 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			);
 
 			expect(loginResponse.status).toBe(200);
-			const loginData = (await loginResponse.json()) as any;
-			expect(loginData.user.email).toBe(flowTestUser.email);
+			const loginData = (await loginResponse.json()) as ApiResponse;
+			expect(loginData.user?.email).toBe(flowTestUser.email);
 		});
 	});
 });
