@@ -1,4 +1,7 @@
+import { readdirSync, readFileSync } from "node:fs";
 import type { Server } from "node:http";
+import { join } from "node:path";
+import Database from "better-sqlite3";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { App, type AppConfig } from "../index";
 
@@ -6,6 +9,48 @@ import { App, type AppConfig } from "../index";
  * Integration tests for authentication API endpoints
  * Tests HTTP status codes for user registration and login flows
  */
+
+/**
+ * Run database migrations for tests
+ * Reads and executes SQL migration files from the drizzle folder
+ * Handles cases where tables already exist
+ */
+function runMigrations(dbPath: string): void {
+	const db = new Database(dbPath);
+	const migrationsPath = join(process.cwd(), "drizzle");
+
+	try {
+		// Check if migrations have already been run by checking for auth_users table
+		const tables = db
+			.prepare(
+				"SELECT name FROM sqlite_master WHERE type='table' AND name='auth_users'"
+			)
+			.all();
+
+		if (tables.length > 0) {
+			console.log("✅ Database tables already exist, skipping migrations");
+			return;
+		}
+
+		// Get all SQL migration files and sort them
+		const migrationFiles = readdirSync(migrationsPath)
+			.filter((file) => file.endsWith(".sql"))
+			.sort();
+
+		// Execute each migration
+		for (const file of migrationFiles) {
+			const migrationSQL = readFileSync(join(migrationsPath, file), "utf-8");
+			db.exec(migrationSQL);
+		}
+
+		console.log("✅ Database migrations completed successfully");
+	} catch (error) {
+		console.error("❌ Migration failed:", error);
+		throw error;
+	} finally {
+		db.close();
+	}
+}
 
 // Type definitions for API responses
 interface ApiResponse {
@@ -47,6 +92,9 @@ let server: Server;
 
 describe("Authentication Integration Tests - HTTP Status Codes", () => {
 	beforeAll(async () => {
+		// Run database migrations before starting server
+		runMigrations("./database.sqlite");
+
 		// Start the test server
 		app = new App(TEST_SERVER_CONFIG);
 		server = app.getServer().listen(TEST_PORT);
