@@ -297,8 +297,6 @@ npm run test:coverage
 #### Documentation
 For detailed integration test documentation, see:
 - [AUTH_INTEGRATION_TESTS.md](./AUTH_INTEGRATION_TESTS.md) - Complete test documentation
-- [QUICK_START_TESTS.md](./QUICK_START_TESTS.md) - Quick start guide
-- [TEST_OVERVIEW.md](./TEST_OVERVIEW.md) - Visual test overview
 
 ### Code Quality Workflow
 ```bash
