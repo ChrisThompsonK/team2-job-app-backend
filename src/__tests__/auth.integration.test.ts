@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
-import { App, type AppConfig } from "../index";
 import type { Server } from "http";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { App, type AppConfig } from "../index";
 
 /**
  * Integration tests for authentication API endpoints
@@ -82,7 +82,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(201);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("message", "User registered successfully");
 			expect(data).toHaveProperty("user");
 			expect(data.user).toHaveProperty("email", testUser.email);
@@ -111,7 +111,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(409);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "User already exists");
 			expect(data).toHaveProperty(
 				"message",
@@ -140,7 +140,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "Validation failed");
 			expect(data).toHaveProperty("details");
 			expect(Array.isArray(data.details)).toBe(true);
@@ -167,7 +167,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error");
 		});
 
@@ -190,7 +190,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 	});
@@ -205,16 +205,13 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				surname: "Tester",
 			};
 
-			await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(loginTestUser),
-				}
-			);
+			await fetch(`http://localhost:${TEST_PORT}/api/auth/register`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(loginTestUser),
+			});
 
 			// Now attempt login
 			const loginResponse = await fetch(
@@ -233,7 +230,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(loginResponse.status).toBe(200);
 
-			const data = await loginResponse.json() as any;
+			const data = (await loginResponse.json()) as any;
 			expect(data).toHaveProperty("message", "Login successful");
 			expect(data).toHaveProperty("user");
 			expect(data.user).toHaveProperty("email", loginTestUser.email);
@@ -257,7 +254,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(401);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "Invalid credentials");
 			expect(data).toHaveProperty("message", "Email or password is incorrect");
 		});
@@ -279,7 +276,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(401);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "Invalid credentials");
 		});
 
@@ -300,7 +297,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 
@@ -321,7 +318,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 
@@ -342,7 +339,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			expect(response.status).toBe(400);
 
-			const data = await response.json() as any;
+			const data = (await response.json()) as any;
 			expect(data).toHaveProperty("error", "Validation failed");
 		});
 	});
@@ -369,7 +366,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			);
 
 			expect(registerResponse.status).toBe(201);
-			const registerData = await registerResponse.json() as any;
+			const registerData = (await registerResponse.json()) as any;
 			expect(registerData.user.email).toBe(flowTestUser.email);
 
 			// Step 2: Login with registered credentials - expect 200
@@ -388,7 +385,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			);
 
 			expect(loginResponse.status).toBe(200);
-			const loginData = await loginResponse.json() as any;
+			const loginData = (await loginResponse.json()) as any;
 			expect(loginData.user.email).toBe(flowTestUser.email);
 		});
 	});
