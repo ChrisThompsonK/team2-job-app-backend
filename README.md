@@ -101,11 +101,7 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 ├── vitest.config.ts        # Vitest testing configuration
 ├── biome.json              # Biome linter and formatter configuration
 ├── API_DOCUMENTATION.md    # Complete API documentation
-├── CRON_JOBS.md            # CRON job documentation
-├── AUTH_INTEGRATION_TESTS.md    # Authentication integration test documentation
-├── QUICK_START_TESTS.md         # Quick start guide for tests
-├── TEST_OVERVIEW.md             # Visual test overview
-└── INTEGRATION_TEST_COMPLETE.md # Detailed integration test summary
+└── CRON_JOBS.md            # CRON job documentation
 ```
 
 ## 🛠️ Available Scripts
@@ -293,10 +289,6 @@ npm run test:coverage
 ✅ Tests: 12 passed
 ⏱️ Duration: ~2.5 seconds
 ```
-
-#### Documentation
-For detailed integration test documentation, see:
-- [AUTH_INTEGRATION_TESTS.md](./AUTH_INTEGRATION_TESTS.md) - Complete test documentation
 
 ### Code Quality Workflow
 ```bash

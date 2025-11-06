@@ -191,7 +191,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 		it("should return 200 OK on successful login with correct credentials", async () => {
 			// First register a fresh user for this test
 			const loginTestUser = {
-				email: "login-test@example.com",
+				email: getUniqueEmail("login-test"),
 				password: "LoginTest123!",
 				forename: "Login",
 				surname: "Tester",
