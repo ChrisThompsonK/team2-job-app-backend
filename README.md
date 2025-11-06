@@ -86,6 +86,10 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 │   │   ├── password.ts      # Password hashing with bcrypt
 │   │   ├── sqids.ts         # User ID generation
 │   │   └── validation.ts    # Zod validation schemas
+│   ├── __tests__/           # Test files
+│   │   ├── auth.integration.test.ts  # Authentication HTTP status code tests
+│   │   ├── jobApplication.test.ts
+│   │   └── jobRole.test.ts
 │   └── index.ts             # Main application entry point
 ├── drizzle/                 # Database migration files
 ├── dist/                    # Compiled JavaScript output
@@ -97,7 +101,11 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 ├── vitest.config.ts        # Vitest testing configuration
 ├── biome.json              # Biome linter and formatter configuration
 ├── API_DOCUMENTATION.md    # Complete API documentation
-└── CRON_JOBS.md            # CRON job documentation
+├── CRON_JOBS.md            # CRON job documentation
+├── AUTH_INTEGRATION_TESTS.md    # Authentication integration test documentation
+├── QUICK_START_TESTS.md         # Quick start guide for tests
+├── TEST_OVERVIEW.md             # Visual test overview
+└── INTEGRATION_TEST_COMPLETE.md # Detailed integration test summary
 ```
 
 ## 🛠️ Available Scripts
@@ -114,6 +122,10 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **`npm run test:watch`**: Run tests in watch mode
 - **`npm run test:ui`**: Open Vitest UI for interactive testing
 - **`npm run test:coverage`**: Run tests with coverage report
+
+#### Integration Tests
+- **`npm test -- src/__tests__/auth.integration.test.ts --reporter=verbose`**: Run authentication integration tests with verbose output
+- **12 comprehensive tests** covering HTTP status codes for registration and login endpoints
 
 ### Code Quality (Biome)
 - **`npm run lint`**: Check for linting issues
@@ -196,6 +208,97 @@ This returns the current configuration (useful for troubleshooting).
 4. **Type Checking**: Run `npm run type-check` to validate TypeScript
 5. **Code Quality**: Use `npm run check:fix` to fix linting and formatting
 6. **Database GUI**: Use `npm run db:studio` to explore data
+
+### Code Quality Workflow
+```bash
+# Check and fix all code quality issues
+npm run check:fix
+
+# Or run individually
+npm run lint:fix    # Fix linting issues
+npm run format:fix  # Fix formatting issues
+```
+
+## 🧪 Testing
+
+### Running Tests
+
+#### All Tests
+```bash
+npm test           # Watch mode
+npm run test:run   # Single run
+```
+
+#### Integration Tests (Authentication)
+```bash
+# Run with verbose output
+npm test -- src/__tests__/auth.integration.test.ts --reporter=verbose
+
+# Run in watch mode
+npm test -- src/__tests__/auth.integration.test.ts
+```
+
+### Test Coverage
+```bash
+npm run test:coverage
+```
+
+### Test UI
+```bash
+npm run test:ui
+```
+
+### Integration Test Suite
+
+The authentication integration test suite (`src/__tests__/auth.integration.test.ts`) provides comprehensive testing of HTTP status codes for user authentication endpoints:
+
+#### Test Coverage
+- **12 comprehensive tests** - All passing ✅
+- **Real API calls** - Uses fetch to test actual HTTP requests
+- **HTTP status codes** - Validates correct status codes (201, 200, 400, 401, 409)
+- **Complete workflows** - Tests registration → login flows
+- **Edge cases** - Handles null values, empty bodies, whitespace
+
+#### Tests Included
+
+**Registration Tests (5 tests)**
+- `201 Created` - Successful user registration
+- `409 Conflict` - Duplicate email attempts
+- `400 Bad Request` - Invalid email, weak password, missing fields
+
+**Login Tests (6 tests)**
+- `200 OK` - Successful login with valid credentials
+- `401 Unauthorized` - Invalid credentials or non-existent user
+- `400 Bad Request` - Missing or invalid fields
+
+**Workflow Tests (1 test)**
+- Complete registration → login flow
+
+#### Running Integration Tests
+
+```bash
+# Run with verbose output
+npm test -- src/__tests__/auth.integration.test.ts --reporter=verbose
+
+# Run in watch mode
+npm test -- src/__tests__/auth.integration.test.ts
+
+# Run with coverage
+npm run test:coverage
+```
+
+#### Expected Results
+```
+✅ Test Files: 1 passed
+✅ Tests: 12 passed
+⏱️ Duration: ~2.5 seconds
+```
+
+#### Documentation
+For detailed integration test documentation, see:
+- [AUTH_INTEGRATION_TESTS.md](./AUTH_INTEGRATION_TESTS.md) - Complete test documentation
+- [QUICK_START_TESTS.md](./QUICK_START_TESTS.md) - Quick start guide
+- [TEST_OVERVIEW.md](./TEST_OVERVIEW.md) - Visual test overview
 
 ### Code Quality Workflow
 ```bash

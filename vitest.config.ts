@@ -48,7 +48,7 @@ export default defineConfig({
     },
     
     // Reporter configuration
-    reporters: ['verbose'],
+    reporters: ['verbose', '../../test-report-generator/index.ts'],
     
     // Timeout settings
     testTimeout: 10000,

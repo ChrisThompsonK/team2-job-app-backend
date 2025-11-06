@@ -151,6 +151,9 @@ process.on("unhandledRejection", (reason: unknown) => {
 	process.exit(1);
 });
 
-app.start();
+// Only start the app if this file is run directly, not when imported for testing
+if (import.meta.url === `file://${process.argv[1]}`) {
+	app.start();
+}
 
 export { App, type AppConfig };
