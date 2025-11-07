@@ -2,6 +2,7 @@
  * Main entry point for the Express application
  */
 
+import { pathToFileURL } from "node:url";
 import cors from "cors";
 import express, {
 	type Application,
@@ -152,7 +153,11 @@ process.on("unhandledRejection", (reason: unknown) => {
 });
 
 // Only start the app if this file is run directly, not when imported for testing
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Use pathToFileURL for cross-platform compatibility (Windows uses backslashes)
+if (
+	process.argv[1] &&
+	import.meta.url === pathToFileURL(process.argv[1]).href
+) {
 	app.start();
 }
 

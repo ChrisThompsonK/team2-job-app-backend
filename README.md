@@ -287,17 +287,7 @@ npm run test:coverage
 ```
 ✅ Test Files: 1 passed
 ✅ Tests: 12 passed
-⏱️ Duration: ~2.5 seconds
-```
-
-### Code Quality Workflow
-```bash
-# Check and fix all code quality issues
-npm run check:fix
-
-# Or run individually
-npm run lint:fix    # Fix linting issues
-npm run format:fix  # Fix formatting issues
+⏱️ Duration: varies depending on test suite size
 ```
 
 ### API Testing

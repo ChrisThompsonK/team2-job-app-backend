@@ -1,7 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
 import type { Server } from "node:http";
-import { join } from "node:path";
-import Database from "better-sqlite3";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { App, type AppConfig } from "../index";
 
@@ -9,48 +6,6 @@ import { App, type AppConfig } from "../index";
  * Integration tests for authentication API endpoints
  * Tests HTTP status codes for user registration and login flows
  */
-
-/**
- * Run database migrations for tests
- * Reads and executes SQL migration files from the drizzle folder
- * Handles cases where tables already exist
- */
-function runMigrations(dbPath: string): void {
-	const db = new Database(dbPath);
-	const migrationsPath = join(process.cwd(), "drizzle");
-
-	try {
-		// Check if migrations have already been run by checking for auth_users table
-		const tables = db
-			.prepare(
-				"SELECT name FROM sqlite_master WHERE type='table' AND name='auth_users'"
-			)
-			.all();
-
-		if (tables.length > 0) {
-			console.log("✅ Database tables already exist, skipping migrations");
-			return;
-		}
-
-		// Get all SQL migration files and sort them
-		const migrationFiles = readdirSync(migrationsPath)
-			.filter((file) => file.endsWith(".sql"))
-			.sort();
-
-		// Execute each migration
-		for (const file of migrationFiles) {
-			const migrationSQL = readFileSync(join(migrationsPath, file), "utf-8");
-			db.exec(migrationSQL);
-		}
-
-		console.log("✅ Database migrations completed successfully");
-	} catch (error) {
-		console.error("❌ Migration failed:", error);
-		throw error;
-	} finally {
-		db.close();
-	}
-}
 
 // Type definitions for API responses
 interface ApiResponse {
@@ -66,7 +21,8 @@ interface ApiResponse {
 }
 
 // Test configuration
-const TEST_PORT = 3001;
+const TEST_PORT = 0; // Use 0 to let OS assign available port dynamically
+let actualTestPort: number; // Will hold the actual port after server starts
 const TEST_SERVER_CONFIG: AppConfig = {
 	name: "Job App Backend",
 	version: "1.0.0",
@@ -74,9 +30,12 @@ const TEST_SERVER_CONFIG: AppConfig = {
 	port: TEST_PORT,
 };
 
-// Generate unique test emails using timestamp to avoid database conflicts
+// Generate unique test emails to avoid database conflicts
+// Uses timestamp and random string for better uniqueness in parallel tests
+let emailCounter = 0;
 const getUniqueEmail = (base: string): string => {
-	return `${base}-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
+	emailCounter++;
+	return `${base}-${Date.now()}-${emailCounter}-${Math.random().toString(36).substring(7)}@example.com`;
 };
 
 // Test data
@@ -92,15 +51,21 @@ let server: Server;
 
 describe("Authentication Integration Tests - HTTP Status Codes", () => {
 	beforeAll(async () => {
-		// Run database migrations before starting server
-		runMigrations("./database.sqlite");
-
 		// Start the test server
 		app = new App(TEST_SERVER_CONFIG);
 		server = app.getServer().listen(TEST_PORT);
 
-		// Give the server a moment to start
-		await new Promise((resolve) => setTimeout(resolve, 100));
+		// Wait for server to be ready and capture the actual port
+		await new Promise<void>((resolve, reject) => {
+			server.on("listening", () => {
+				const address = server.address();
+				if (address && typeof address === "object") {
+					actualTestPort = address.port;
+				}
+				resolve();
+			});
+			server.on("error", reject);
+		});
 	});
 
 	afterAll(async () => {
@@ -116,7 +81,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 	describe("POST /api/auth/register - User Registration", () => {
 		it("should return 201 Created on successful registration", async () => {
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
+				`http://localhost:${actualTestPort}/api/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -139,7 +104,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 		it("should return 409 Conflict when user already exists", async () => {
 			// Try to register with the same email
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
+				`http://localhost:${actualTestPort}/api/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -168,7 +133,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			};
 
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
+				`http://localhost:${actualTestPort}/api/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -195,7 +160,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			};
 
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
+				`http://localhost:${actualTestPort}/api/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -218,7 +183,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			};
 
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
+				`http://localhost:${actualTestPort}/api/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -246,7 +211,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 			};
 
 			const registerResponse = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
+				`http://localhost:${actualTestPort}/api/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -261,7 +226,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			// Now attempt login
 			const loginResponse = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/login`,
+				`http://localhost:${actualTestPort}/api/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -273,12 +238,6 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 					}),
 				}
 			);
-
-			// Log response for debugging if it fails
-			if (loginResponse.status !== 200) {
-				const errorData = await loginResponse.json();
-				console.error("Login failed:", errorData);
-			}
 
 			expect(loginResponse.status).toBe(200);
 
@@ -298,7 +257,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				surname: "Login",
 			};
 
-			await fetch(`http://localhost:${TEST_PORT}/api/auth/register`, {
+			await fetch(`http://localhost:${actualTestPort}/api/auth/register`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -308,7 +267,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			// Try to login with wrong password
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/login`,
+				`http://localhost:${actualTestPort}/api/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -321,12 +280,6 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				}
 			);
 
-			// Log response for debugging if it fails
-			if (response.status !== 401) {
-				const errorData = await response.json();
-				console.error("Expected 401, got:", response.status, errorData);
-			}
-
 			expect(response.status).toBe(401);
 
 			const data = (await response.json()) as ApiResponse;
@@ -336,7 +289,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 		it("should return 401 Unauthorized when user does not exist", async () => {
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/login`,
+				`http://localhost:${actualTestPort}/api/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -349,12 +302,6 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				}
 			);
 
-			// Log response for debugging if it fails
-			if (response.status !== 401) {
-				const errorData = await response.json();
-				console.error("Expected 401, got:", response.status, errorData);
-			}
-
 			expect(response.status).toBe(401);
 
 			const data = (await response.json()) as ApiResponse;
@@ -363,7 +310,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 		it("should return 400 Bad Request on validation failure - missing email", async () => {
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/login`,
+				`http://localhost:${actualTestPort}/api/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -384,7 +331,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 		it("should return 400 Bad Request on validation failure - invalid email format", async () => {
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/login`,
+				`http://localhost:${actualTestPort}/api/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -405,7 +352,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 		it("should return 400 Bad Request on validation failure - missing password", async () => {
 			const response = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/login`,
+				`http://localhost:${actualTestPort}/api/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -436,7 +383,7 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 
 			// Step 1: Register user - expect 201
 			const registerResponse = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/register`,
+				`http://localhost:${actualTestPort}/api/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -446,19 +393,13 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 				}
 			);
 
-			// Log response for debugging if it fails
-			if (registerResponse.status !== 201) {
-				const errorData = await registerResponse.json();
-				console.error("Registration failed:", errorData);
-			}
-
 			expect(registerResponse.status).toBe(201);
 			const registerData = (await registerResponse.json()) as ApiResponse;
 			expect(registerData.user?.email).toBe(flowTestUser.email);
 
 			// Step 2: Login with registered credentials - expect 200
 			const loginResponse = await fetch(
-				`http://localhost:${TEST_PORT}/api/auth/login`,
+				`http://localhost:${actualTestPort}/api/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -470,12 +411,6 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 					}),
 				}
 			);
-
-			// Log response for debugging if it fails
-			if (loginResponse.status !== 200) {
-				const errorData = await loginResponse.json();
-				console.error("Login failed:", errorData);
-			}
 
 			expect(loginResponse.status).toBe(200);
 			const loginData = (await loginResponse.json()) as ApiResponse;
