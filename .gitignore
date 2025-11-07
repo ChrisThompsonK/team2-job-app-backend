@@ -152,6 +152,7 @@ Icon?
 # Ignore all database files to prevent committing local development data
 database.sqlite
 database_backup.sqlite
+test-database.sqlite
 *.sqlite-shm
 *.sqlite-wal
 *.db-shm
