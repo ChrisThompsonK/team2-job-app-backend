@@ -122,7 +122,11 @@ export const config: Config = {
 		host: process.env["HOST"] || "localhost",
 	},
 	database: {
-		url: process.env["DATABASE_URL"] || "./database.sqlite",
+		url:
+			process.env["DATABASE_URL"] ||
+			(process.env["NODE_ENV"] === "test"
+				? "./test-database.sqlite"
+				: "./database.sqlite"),
 	},
 	features: {
 		debugMode: parseBoolean(process.env["DEBUG"], false),

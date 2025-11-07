@@ -9,6 +9,14 @@ export default defineConfig({
     // Environment for testing (node for backend, jsdom/happy-dom for frontend)
     environment: 'node',
     
+    // Setup file to run before tests
+    setupFiles: ['./src/__tests__/setup.ts'],
+    
+    // Set environment variables for tests
+    env: {
+      NODE_ENV: 'test',
+    },
+    
     // Include patterns for test files
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     
