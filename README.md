@@ -217,6 +217,90 @@ npm run lint:fix    # Fix linting issues
 npm run format:fix  # Fix formatting issues
 ```
 
+## 🐳 Docker Deployment
+
+### Docker Image
+
+This project includes a multi-stage Dockerfile optimized for production deployment.
+
+#### Building the Docker Image
+
+Build the image with version tags:
+
+```bash
+# Build with version and latest tags
+docker build -t team2-job-app-backend:1.0.0 -t team2-job-app-backend:latest .
+
+# Build with custom tag
+docker build -t team2-job-app-backend:my-tag .
+```
+
+#### What the Build Does
+
+1. **Stage 1: Builder**
+   - Uses Node.js 20 Alpine for minimal size
+   - Installs all dependencies (including dev dependencies)
+   - Compiles TypeScript to JavaScript
+   - Outputs compiled code to `dist/` directory
+
+2. **Stage 2: Production**
+   - Creates clean production image
+   - Installs only production dependencies
+   - Copies compiled code from builder stage
+   - Copies database migration files
+   - Creates non-root user for security
+   - Sets up health checks
+
+#### Running the Docker Container
+
+```bash
+# Run the container
+docker run -p 3000:3000 team2-job-app-backend:latest
+
+# Run with environment variables
+docker run -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e SESSION_SECRET=your-secret-key \
+  team2-job-app-backend:latest
+
+# Run with a volume for persistent database
+docker run -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  -e DATABASE_URL=/app/data/database.sqlite \
+  team2-job-app-backend:latest
+```
+
+#### Docker Image Details
+
+- **Base Image**: `node:20-alpine`
+- **Image Size**: ~505MB
+- **Exposed Port**: 3000
+- **Working Directory**: `/app`
+- **Health Check**: HTTP GET to `/health` every 30s
+- **User**: Non-root user `nodejs` (UID 1001, GID 1001)
+
+#### Listing Built Images
+
+```bash
+# List all team2-job-app-backend images
+docker images team2-job-app-backend
+
+# Expected output:
+# REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
+# team2-job-app-backend   1.0.0     2102c05d778c   X minutes ago    505MB
+# team2-job-app-backend   latest    2102c05d778c   X minutes ago    505MB
+```
+
+#### Docker Best Practices
+
+- ✅ **Multi-stage builds** - Reduces final image size by separating build and runtime
+- ✅ **Alpine Linux** - Minimal base image for smaller size
+- ✅ **Non-root user** - Improved security by running as `nodejs` user
+- ✅ **Layer caching** - Dependencies installed before copying source code
+- ✅ **Production dependencies only** - Runtime image excludes dev dependencies
+- ✅ **Health checks** - Automatic container health monitoring
+
 ## 🧪 Testing
 
 ### Running Tests
