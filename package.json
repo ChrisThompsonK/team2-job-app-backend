@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc && node fix-imports.mjs",
+    "build": "tsc",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "test": "vitest",
