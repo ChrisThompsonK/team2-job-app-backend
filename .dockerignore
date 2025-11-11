@@ -37,9 +37,6 @@ Thumbs.db
 .gitattributes
 
 # Documentation
-README.md
-CONTRIBUTING.md
-LICENSE
 *.md
 
 # CI/CD
