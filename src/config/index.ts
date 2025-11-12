@@ -24,6 +24,9 @@ interface Config {
 	features: {
 		debugMode: boolean;
 	};
+	cors: {
+		origin: string;
+	};
 	session: {
 		secret: string;
 		name: string;
@@ -130,6 +133,9 @@ export const config: Config = {
 	},
 	features: {
 		debugMode: parseBoolean(process.env["DEBUG"], false),
+	},
+	cors: {
+		origin: process.env["FRONTEND_URL"] || "http://localhost:3000",
 	},
 	session: {
 		secret:

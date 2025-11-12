@@ -161,5 +161,8 @@ test-database.sqlite
 # Drizzle Studio
 .drizzle
 
+# Docker artifacts
+drizzle-docker.config.ts
+
 # Planning and specification documents (work in progress)
 src/spec/

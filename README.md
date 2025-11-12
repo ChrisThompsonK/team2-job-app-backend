@@ -142,6 +142,52 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ## 🔧 Development
 
+### Docker Deployment
+
+This application is fully containerized and can be run using Docker. See [DOCKER.md](./DOCKER.md) for comprehensive Docker documentation.
+
+#### Quick Start with Docker
+
+```bash
+# Build and start with Docker Compose (recommended)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose down
+
+# Access the API
+curl http://localhost:8000/
+```
+
+#### Build Docker Image Manually
+
+```bash
+# Build the image
+docker build -t team2-job-app-backend:latest .
+
+# Run the container
+docker run -d \
+  -p 8000:8000 \
+  -e SESSION_SECRET="your-secure-secret-min-32-chars" \
+  -v $(pwd)/data:/app/data \
+  --name team2-job-app-backend \
+  team2-job-app-backend:latest
+```
+
+#### Docker Features
+
+- ✅ **Multi-stage build** - Optimized for production
+- ✅ **Minimal base image** - Alpine Linux (~795MB total)
+- ✅ **Security** - Runs as non-root user
+- ✅ **Health checks** - Built-in container health monitoring
+- ✅ **Data persistence** - SQLite database in Docker volume
+- ✅ **Environment configuration** - Flexible environment variables
+
+📖 **Complete Docker Guide**: See [DOCKER.md](./DOCKER.md) for detailed documentation.
+
 ### Quick Start
 1. **Install Dependencies**: `npm install`
 2. **Setup Environment**: Copy `.env.example` to `.env` and configure
@@ -358,6 +404,8 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 - **Vitest**: Next generation testing framework
 - **Biome**: Fast formatter, linter, and import organizer
 - **ES Modules**: Modern module system
+- **Docker**: Container platform for consistent deployments
+- **Docker Compose**: Multi-container orchestration
 
 ### API Features
 - **RESTful Design**: Clean, intuitive API endpoints
