@@ -12,7 +12,7 @@ cat > /app/drizzle-docker.config.ts << 'EOF'
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-  schema: './src/db/schema.ts',
+  schema: './dist/db/schema.js',
   out: './drizzle',
   dialect: 'sqlite',
   dbCredentials: {
@@ -24,8 +24,8 @@ EOF
 # Run migrations using drizzle-kit push (creates tables from schema)
 npx drizzle-kit push --config=drizzle-docker.config.ts
 
-# Seed the database
-npx tsx src/scripts/seedDatabase.ts
+# Seed the database using compiled JavaScript
+node dist/scripts/seedDatabase.js
 
-# Start the application
-exec npx tsx src/index.ts
+# Start the application using compiled JavaScript
+exec node dist/index.js

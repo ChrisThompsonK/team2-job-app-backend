@@ -18,6 +18,8 @@ src/__tests__
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 
 # Database files (these should be mounted as volumes)
 *.sqlite
@@ -63,3 +65,26 @@ src/spec
 Dockerfile
 .dockerignore
 docker-compose.yml
+
+# Security and sensitive files
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+secrets/
+private/
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+.circleci/
+jenkins/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp

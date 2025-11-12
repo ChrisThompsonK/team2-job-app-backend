@@ -26,6 +26,15 @@ services:
       timeout: 3s
       start_period: 5s
       retries: 3
+    # Resource limits for better container management
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
 volumes:
   db-data:
