@@ -75,6 +75,12 @@ web_modules/
 .env.development
 .env.staging
 
+# Docker environment files
+.env.docker
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
