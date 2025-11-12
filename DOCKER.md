@@ -40,7 +40,7 @@ docker rm team2-backend
 The Dockerfile uses tsx to run TypeScript directly in production:
 
 - **Base Image**: Uses `node:20-alpine` for small footprint
-- **TypeScript Runtime**: Uses `tsx` to execute TypeScript files directly (no compilation needed)
+- **TypeScript Runtime**: Compiles TypeScript to JavaScript during the build stage and runs the compiled JavaScript with `node`
 - **Database Initialization**: Automatically runs migrations and seeds data on startup
 - **Security**: Runs as non-root user (nodejs:1001)
 - **Health Checks**: Built-in health monitoring
