@@ -144,100 +144,49 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ### Docker Deployment
 
-This application is fully containerized and can be run using Docker.
+This application can be run using Docker.
 
-#### Quick Start with Docker Compose (Recommended)
-
-```bash
-# Build and start with Docker Compose
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop containers
-docker-compose down
-
-# Access the API
-curl http://localhost:8000/
-```
-
-#### Build and Run Manually
+#### Build and Run
 
 ```bash
 # Build the image
-docker build -t team2-job-app-backend:latest .
+docker build -t team2-job-app-backend .
 
 # Run the container
 docker run -d \
   -p 8000:8000 \
   -e SESSION_SECRET="your-secure-secret-min-32-chars" \
-  -v job-app-data:/app/data \
   --name team2-backend \
-  team2-job-app-backend:latest
+  team2-job-app-backend
 ```
-
-#### Docker Features
-
-- ✅ **Single-stage build** - Uses `node:20-alpine` base image (~795MB)
-- ✅ **TypeScript Runtime** - Compiles TypeScript during build, runs JavaScript with node
-- ✅ **Security** - Runs as non-root user (nodejs:1001)
-- ✅ **Health checks** - Built-in container health monitoring
-- ✅ **Auto-initialization** - Automatically runs migrations and seeds data on startup
-- ✅ **Data persistence** - SQLite database in Docker volume
-
-#### Environment Variables for Docker
-
-Required:
-- `SESSION_SECRET` - Secure random string (min 32 characters)
-
-Optional:
-- `NODE_ENV` (default: `production`)
-- `PORT` (default: `8000`)
-- `HOST` (default: `0.0.0.0`)
-- `DATABASE_URL` (default: `/app/data/database.sqlite`)
 
 Generate a secure session secret:
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-#### Data Persistence
+#### Optional: Data Persistence
 
-To persist data across container restarts, use a Docker volume:
+To persist the database across container restarts:
 ```bash
 docker run -d \
   -p 8000:8000 \
   -e SESSION_SECRET="your-secure-secret" \
   -v job-app-data:/app/data \
+  -e DATABASE_URL="/app/data/database.sqlite" \
   --name team2-backend \
-  team2-job-app-backend:latest
+  team2-job-app-backend
 ```
 
-#### Health Checks
+#### Initialize Database
 
+After starting the container, initialize the database:
 ```bash
-# Check container health status
-docker inspect --format='{{.State.Health.Status}}' team2-backend
+# Run migrations
+docker exec team2-backend npx drizzle-kit push
 
-# View health check logs
-docker inspect --format='{{range .State.Health.Log}}{{.Output}}{{end}}' team2-backend
-```
-
-#### Troubleshooting
-
-```bash
-# View container logs
-docker logs -f team2-backend
-
-# Access container shell
-docker exec -it team2-backend sh
-
-# Check resource usage
-docker stats team2-backend
-
-# Rebuild without cache
-docker build --no-cache -t team2-job-app-backend:latest .
+# Seed sample data (optional)
+docker exec team2-backend npx tsx src/scripts/seedDatabase.ts
 ```
 
 ### Quick Start
