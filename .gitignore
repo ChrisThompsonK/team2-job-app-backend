@@ -172,3 +172,4 @@ drizzle-docker.config.ts
 
 # Planning and specification documents (work in progress)
 src/spec/
+.env.docker
