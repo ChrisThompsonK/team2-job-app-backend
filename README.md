@@ -144,7 +144,7 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ### Docker Deployment
 
-This application can be run using Docker.
+This application can be run using Docker with automatic database initialization.
 
 #### Build and Run
 
@@ -152,10 +152,18 @@ This application can be run using Docker.
 # Build the image
 docker build -t team2-job-app-backend .
 
-# Run the container
+# Run with auto-initialization
 docker run -d \
   -p 8000:8000 \
   -e SESSION_SECRET="your-secure-secret-min-32-chars" \
+  --name team2-backend \
+  team2-job-app-backend
+
+# Run with sample data
+docker run -d \
+  -p 8000:8000 \
+  -e SESSION_SECRET="your-secure-secret-min-32-chars" \
+  -e SEED_DATABASE=true \
   --name team2-backend \
   team2-job-app-backend
 ```
@@ -165,29 +173,13 @@ Generate a secure session secret:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-#### Optional: Data Persistence
+#### Environment Variables
 
-To persist the database across container restarts:
-```bash
-docker run -d \
-  -p 8000:8000 \
-  -e SESSION_SECRET="your-secure-secret" \
-  -v job-app-data:/app/data \
-  -e DATABASE_URL="/app/data/database.sqlite" \
-  --name team2-backend \
-  team2-job-app-backend
-```
-
-#### Initialize Database
-
-After starting the container, initialize the database:
-```bash
-# Run migrations
-docker exec team2-backend npx drizzle-kit push
-
-# Seed sample data (optional)
-docker exec team2-backend npx tsx src/scripts/seedDatabase.ts
-```
+- `SESSION_SECRET` - Required: Secure random string (min 32 characters)
+- `SEED_DATABASE` - Optional: Set to `true` to seed sample data on startup
+- `NODE_ENV` - Optional: `development` or `production` (default: `development`)
+- `PORT` - Optional: Server port (default: `8000`)
+- `DATABASE_URL` - Optional: Database path (default: `./database.sqlite`)
 
 ### Quick Start
 1. **Install Dependencies**: `npm install`
