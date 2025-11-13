@@ -75,6 +75,12 @@ web_modules/
 .env.development
 .env.staging
 
+# Docker environment files
+.env.docker
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -161,5 +167,9 @@ test-database.sqlite
 # Drizzle Studio
 .drizzle
 
+# Docker artifacts
+drizzle-docker.config.ts
+
 # Planning and specification documents (work in progress)
 src/spec/
+.env.docker

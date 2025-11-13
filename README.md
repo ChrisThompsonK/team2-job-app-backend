@@ -142,6 +142,29 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ## 🔧 Development
 
+### Docker Deployment
+
+Build and run the application using Docker:
+
+```bash
+# Build the image
+docker build -t team2-job-app-backend .
+
+# Run the container
+docker run -d -p 8000:8000 -e NODE_ENV=production -e HOST=0.0.0.0 --name job-app-backend team2-job-app-backend
+
+# View logs
+docker logs -f job-app-backend
+
+# Stop and remove
+docker stop job-app-backend && docker rm job-app-backend
+```
+
+**Optional**: For data persistence across restarts, mount a volume:
+```bash
+docker run -d -p 8000:8000 -e NODE_ENV=production -e HOST=0.0.0.0 -v $(pwd)/data:/app/data --name job-app-backend team2-job-app-backend
+```
+
 ### Quick Start
 1. **Install Dependencies**: `npm install`
 2. **Setup Environment**: Copy `.env.example` to `.env` and configure
@@ -358,6 +381,8 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 - **Vitest**: Next generation testing framework
 - **Biome**: Fast formatter, linter, and import organizer
 - **ES Modules**: Modern module system
+- **Docker**: Container platform for consistent deployments
+- **Docker Compose**: Multi-container orchestration
 
 ### API Features
 - **RESTful Design**: Clean, intuitive API endpoints
