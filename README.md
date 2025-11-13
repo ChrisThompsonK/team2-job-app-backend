@@ -144,42 +144,26 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ### Docker Deployment
 
-This application can be run using Docker with automatic database initialization.
-
-#### Build and Run
+Build and run the application using Docker:
 
 ```bash
 # Build the image
 docker build -t team2-job-app-backend .
 
-# Run with auto-initialization
-docker run -d \
-  -p 8000:8000 \
-  -e SESSION_SECRET="your-secure-secret-min-32-chars" \
-  --name team2-backend \
-  team2-job-app-backend
+# Run the container
+docker run -d -p 8000:8000 -e NODE_ENV=production -e HOST=0.0.0.0 --name job-app-backend team2-job-app-backend
 
-# Run with sample data
-docker run -d \
-  -p 8000:8000 \
-  -e SESSION_SECRET="your-secure-secret-min-32-chars" \
-  -e SEED_DATABASE=true \
-  --name team2-backend \
-  team2-job-app-backend
+# View logs
+docker logs -f job-app-backend
+
+# Stop and remove
+docker stop job-app-backend && docker rm job-app-backend
 ```
 
-Generate a secure session secret:
+**Optional**: For data persistence across restarts, mount a volume:
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+docker run -d -p 8000:8000 -e NODE_ENV=production -e HOST=0.0.0.0 -v $(pwd)/data:/app/data --name job-app-backend team2-job-app-backend
 ```
-
-#### Environment Variables
-
-- `SESSION_SECRET` - Required: Secure random string (min 32 characters)
-- `SEED_DATABASE` - Optional: Set to `true` to seed sample data on startup
-- `NODE_ENV` - Optional: `development` or `production` (default: `development`)
-- `PORT` - Optional: Server port (default: `8000`)
-- `DATABASE_URL` - Optional: Database path (default: `./database.sqlite`)
 
 ### Quick Start
 1. **Install Dependencies**: `npm install`

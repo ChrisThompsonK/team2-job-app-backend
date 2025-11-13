@@ -1,36 +1,43 @@
+# Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Production stage
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
-RUN npm ci
+# Copy dependencies from builder
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy application files
-COPY . .
+COPY package*.json tsconfig.json drizzle.config.ts ./
+COPY drizzle ./drizzle
+COPY src ./src
 
-# Create data directory and set permissions
+# Create non-root user and set permissions
 RUN mkdir -p /app/data && \
-    addgroup -g 1001 nodejs && \
+    addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
     chown -R nodejs:nodejs /app
 
 USER nodejs
 
+# Expose application port
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8000/ || exit 1
 
-CMD npx tsx -e "\
-import Database from 'better-sqlite3';\
-import { readFileSync, existsSync } from 'fs';\
-const db = new Database(process.env.DATABASE_URL || './database.sqlite');\
-['./drizzle/00_slow_gamma_corps.sql','./drizzle/0001_special_vertigo.sql','./drizzle/0002_naive_zuras.sql','./drizzle/0003_add_auth_and_applications.sql'].forEach(f => {\
-  if (existsSync(f)) db.exec(readFileSync(f, 'utf-8'));\
-});\
-db.close();\
-console.log('✅ Database initialized');\
-" && \
-if [ "$SEED_DATABASE" = "true" ]; then npx tsx src/scripts/seedDatabase.ts; fi && \
-npx tsx src/index.ts
+# Run migrations and start the application
+CMD npx drizzle-kit push --config=drizzle.config.ts --force && \
+    npx tsx src/scripts/seedDatabase.ts && \
+    npx tsx src/index.ts

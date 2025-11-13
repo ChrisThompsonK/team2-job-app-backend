@@ -14,19 +14,15 @@ coverage
 *.spec.ts
 src/__tests__
 
-# Environment
+# Environment files
 .env
-.env.local
-.env.*.local
-.env.production
-.env.development
+.env.*
 
-# Database files (these should be mounted as volumes)
+# Database files (mounted as volumes)
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
-database.sqlite
-test-database.sqlite
+data/
 
 # Version control
 .git
@@ -35,14 +31,12 @@ test-database.sqlite
 
 # Documentation
 *.md
-!README.md
 
 # IDE
 .vscode
 .idea
 *.swp
 *.swo
-*~
 
 # OS files
 .DS_Store
@@ -52,39 +46,14 @@ Thumbs.db
 logs
 *.log
 
-# Session files
+# Sessions
 sessions
 
-# Examples
+# Examples and specs
 examples
-
-# Spec files (documentation and planning)
 src/spec
-
-# Docker files
-Dockerfile
-.dockerignore
-docker-compose.yml
-
-# Security and sensitive files
-*.pem
-*.key
-*.cert
-*.crt
-*.p12
-*.pfx
-secrets/
-private/
 
 # CI/CD
 .gitlab-ci.yml
 .travis.yml
 azure-pipelines.yml
-.circleci/
-jenkins/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.temp
