@@ -37,7 +37,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8000/ || exit 1
 
-# Run migrations and start the application
-CMD npx drizzle-kit push --config=drizzle.config.ts --force && \
-    npx tsx src/scripts/seedDatabase.ts && \
-    npx tsx src/index.ts
+# Start the application
+CMD npx tsx src/index.ts
