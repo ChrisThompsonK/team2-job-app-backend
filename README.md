@@ -144,12 +144,12 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 
 ### Docker Deployment
 
-This application is fully containerized and can be run using Docker. See [DOCKER.md](./DOCKER.md) for comprehensive Docker documentation.
+This application is fully containerized and can be run using Docker.
 
-#### Quick Start with Docker
+#### Quick Start with Docker Compose (Recommended)
 
 ```bash
-# Build and start with Docker Compose (recommended)
+# Build and start with Docker Compose
 docker-compose up -d
 
 # View logs
@@ -162,7 +162,7 @@ docker-compose down
 curl http://localhost:8000/
 ```
 
-#### Build Docker Image Manually
+#### Build and Run Manually
 
 ```bash
 # Build the image
@@ -172,21 +172,73 @@ docker build -t team2-job-app-backend:latest .
 docker run -d \
   -p 8000:8000 \
   -e SESSION_SECRET="your-secure-secret-min-32-chars" \
-  -v $(pwd)/data:/app/data \
-  --name team2-job-app-backend \
+  -v job-app-data:/app/data \
+  --name team2-backend \
   team2-job-app-backend:latest
 ```
 
 #### Docker Features
 
-- ✅ **Multi-stage build** - Optimized for production
-- ✅ **Minimal base image** - Alpine Linux (~795MB total)
-- ✅ **Security** - Runs as non-root user
+- ✅ **Single-stage build** - Uses `node:20-alpine` base image (~795MB)
+- ✅ **TypeScript Runtime** - Compiles TypeScript during build, runs JavaScript with node
+- ✅ **Security** - Runs as non-root user (nodejs:1001)
 - ✅ **Health checks** - Built-in container health monitoring
+- ✅ **Auto-initialization** - Automatically runs migrations and seeds data on startup
 - ✅ **Data persistence** - SQLite database in Docker volume
-- ✅ **Environment configuration** - Flexible environment variables
 
-📖 **Complete Docker Guide**: See [DOCKER.md](./DOCKER.md) for detailed documentation.
+#### Environment Variables for Docker
+
+Required:
+- `SESSION_SECRET` - Secure random string (min 32 characters)
+
+Optional:
+- `NODE_ENV` (default: `production`)
+- `PORT` (default: `8000`)
+- `HOST` (default: `0.0.0.0`)
+- `DATABASE_URL` (default: `/app/data/database.sqlite`)
+
+Generate a secure session secret:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+#### Data Persistence
+
+To persist data across container restarts, use a Docker volume:
+```bash
+docker run -d \
+  -p 8000:8000 \
+  -e SESSION_SECRET="your-secure-secret" \
+  -v job-app-data:/app/data \
+  --name team2-backend \
+  team2-job-app-backend:latest
+```
+
+#### Health Checks
+
+```bash
+# Check container health status
+docker inspect --format='{{.State.Health.Status}}' team2-backend
+
+# View health check logs
+docker inspect --format='{{range .State.Health.Log}}{{.Output}}{{end}}' team2-backend
+```
+
+#### Troubleshooting
+
+```bash
+# View container logs
+docker logs -f team2-backend
+
+# Access container shell
+docker exec -it team2-backend sh
+
+# Check resource usage
+docker stats team2-backend
+
+# Rebuild without cache
+docker build --no-cache -t team2-job-app-backend:latest .
+```
 
 ### Quick Start
 1. **Install Dependencies**: `npm install`
