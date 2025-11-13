@@ -180,7 +180,7 @@ docker run -d \
 #### Docker Features
 
 - ✅ **Single-stage build** - Uses `node:20-alpine` base image (~795MB)
-- ✅ **TypeScript Runtime** - Compiles TypeScript during build, runs JavaScript with node
+- ✅ **TypeScript Runtime** - Runs TypeScript directly with tsx runtime (no separate build step)
 - ✅ **Security** - Runs as non-root user (nodejs:1001)
 - ✅ **Health checks** - Built-in container health monitoring
 - ✅ **Auto-initialization** - Automatically runs migrations and seeds data on startup
