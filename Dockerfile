@@ -18,7 +18,7 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy application files
-COPY package*.json tsconfig.json drizzle.config.ts drizzle src ./
+COPY package*.json tsconfig.json drizzle.config.ts drizzle/ src ./
 
 # Create non-root user and set permissions
 RUN mkdir -p /app/data && \
@@ -31,8 +31,8 @@ USER nodejs
 # Expose application port
 EXPOSE 8000
 
-# Health check using node
+# Health check using curl
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8000/', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+  CMD curl -f http://localhost:8000/ || exit 1
 
 CMD npx tsx src/index.ts
