@@ -18,9 +18,7 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy application files
-COPY package*.json tsconfig.json drizzle.config.ts ./
-COPY drizzle ./drizzle
-COPY src ./src
+COPY package*.json tsconfig.json drizzle.config.ts drizzle src ./
 
 # Create non-root user and set permissions
 RUN mkdir -p /app/data && \
