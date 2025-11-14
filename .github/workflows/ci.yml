@@ -113,7 +113,7 @@ jobs:
           for i in {1..${{ env.CONTAINER_STARTUP_TIMEOUT }}}; do
             if docker ps | grep -q test-container; then
               # Container is running, now check if app is ready
-              if curl -sf http://localhost:${{ env.CONTAINER_PORT }}/ > /dev/null 2>&1; then
+              if curl -sf http://localhost:${{ env.CONTAINER_PORT }}/health > /dev/null 2>&1; then
                 echo "✅ Container is running and application is responding"
                 READY=true
                 break
@@ -123,7 +123,9 @@ jobs:
           done
           
           if [ "$READY" = false ]; then
-            echo "⚠️  Container is running but application not responding yet, proceeding with caution..."
+            echo "❌ Container is running but application not responding after 30 seconds. Failing the job."
+            docker logs test-container
+            exit 1
           fi
           
           # Check if container is still running
