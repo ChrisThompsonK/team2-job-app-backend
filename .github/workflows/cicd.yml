@@ -238,32 +238,3 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az acr repository show-tags --name $(echo ${{ secrets.AZURE_ACR_LOGIN_SERVER }} | cut -d'.' -f1) --repository job-app-backend
-
-  # Stage 6: Database Migrations & Seeding (main branch only)
-  database-setup:
-    name: Database Migrations & Seeding
-    runs-on: ubuntu-latest
-    needs: deploy-to-acr
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run database migrations
-        run: npm run db:migrate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Seed database
-        run: npm run db:seed
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
