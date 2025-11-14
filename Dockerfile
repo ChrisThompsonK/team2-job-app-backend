@@ -37,4 +37,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8000/ || exit 1
 
-CMD npm run db:push && npm run db:seed && npx tsx src/index.ts
+CMD npx tsx src/index.ts
