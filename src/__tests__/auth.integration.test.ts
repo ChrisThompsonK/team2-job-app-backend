@@ -102,7 +102,20 @@ describe("Authentication Integration Tests - HTTP Status Codes", () => {
 		});
 
 		it("should return 409 Conflict when user already exists", async () => {
-			// Try to register with the same email
+			// First, register a user
+			const firstResponse = await fetch(
+				`http://localhost:${actualTestPort}/api/auth/register`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(testUser),
+				}
+			);
+			expect(firstResponse.status).toBe(201);
+
+			// Try to register with the same email again - should get 409
 			const response = await fetch(
 				`http://localhost:${actualTestPort}/api/auth/register`,
 				{

@@ -1,13 +1,5 @@
-/**
- * Centralized application configuration module
- * Loads and validates environment variables with type safety
- */
+// Configuration - dotenv not loaded here to avoid overwriting NODE_ENV in tests
 
-import "dotenv/config";
-
-/**
- * Application configuration interface
- */
 interface Config {
 	app: {
 		name: string;

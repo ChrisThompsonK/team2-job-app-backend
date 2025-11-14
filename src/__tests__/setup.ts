@@ -1,20 +1,31 @@
-/**
- * Test setup file
- * Initializes test database with proper schema
- */
-
+import fs from "node:fs";
 import Database from "better-sqlite3";
-import { beforeAll } from "vitest";
+import { beforeAll, beforeEach } from "vitest";
 
-// Use a separate test database
 const TEST_DB_PATH = "./test-database.sqlite";
 
 beforeAll(() => {
-	// Initialize test database
-	const sqlite = new Database(TEST_DB_PATH);
+	process.env["NODE_ENV"] = "test";
 
-	// Run migrations to create tables
-	// Since we don't have proper migration files yet, create tables manually
+	if (fs.existsSync(TEST_DB_PATH)) {
+		try {
+			const sqlite = new Database(TEST_DB_PATH);
+			const tables = sqlite
+				.prepare("SELECT name FROM sqlite_master WHERE type='table'")
+				.all();
+			sqlite.close();
+
+			if ((tables as unknown[]).length > 0) return;
+		} catch {
+			// Recreate on error
+		}
+		fs.unlinkSync(TEST_DB_PATH);
+	}
+
+	const sqlite = new Database(TEST_DB_PATH);
+	sqlite.pragma("foreign_keys = ON");
+
+	// Create tables directly
 	sqlite.exec(`
 		CREATE TABLE IF NOT EXISTS job_roles (
 			id INTEGER PRIMARY KEY NOT NULL,
@@ -30,7 +41,7 @@ beforeAll(() => {
 			number_of_open_positions INTEGER DEFAULT 1 NOT NULL,
 			created_at INTEGER NOT NULL,
 			updated_at INTEGER NOT NULL
-		);
+		)
 	`);
 
 	sqlite.exec(`
@@ -45,7 +56,7 @@ beforeAll(() => {
 			last_login INTEGER,
 			created_at INTEGER NOT NULL,
 			updated_at INTEGER NOT NULL
-		);
+		)
 	`);
 
 	sqlite.exec(`
@@ -65,17 +76,30 @@ beforeAll(() => {
 			updated_at INTEGER NOT NULL,
 			FOREIGN KEY (job_role_id) REFERENCES job_roles(id),
 			FOREIGN KEY (user_id) REFERENCES auth_users(user_id)
-		);
+		)
 	`);
 
-	// Create sessions table for connect-sqlite3
 	sqlite.exec(`
 		CREATE TABLE IF NOT EXISTS sessions (
 			sid TEXT PRIMARY KEY NOT NULL,
 			expired INTEGER NOT NULL,
 			sess TEXT NOT NULL
-		);
+		)
 	`);
 
+	sqlite.exec("PRAGMA integrity_check");
+	sqlite.close();
+});
+
+beforeEach(() => {
+	const sqlite = new Database(TEST_DB_PATH);
+	try {
+		sqlite.exec("DELETE FROM job_applications");
+		sqlite.exec("DELETE FROM sessions");
+		sqlite.exec("DELETE FROM auth_users");
+		sqlite.exec("DELETE FROM job_roles");
+	} catch {
+		// Ignore cleanup errors
+	}
 	sqlite.close();
 });

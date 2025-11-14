@@ -121,9 +121,21 @@ A modern Node.js TypeScript REST API for managing job roles with full CRUD opera
 - **`npm run test:ui`**: Open Vitest UI for interactive testing
 - **`npm run test:coverage`**: Run tests with coverage report
 
+#### Test Database
+- Tests use a separate **`test-database.sqlite`** file configured in `vitest.config.ts`
+- The `DATABASE_URL` environment variable is automatically set to `./test-database.sqlite` when running tests
+- Test setup automatically creates the database schema on first run (file: `src/__tests__/setup.ts`)
+- Database is cleaned between tests to ensure test isolation
+- 44 comprehensive tests covering:
+  - **Authentication**: User registration, login, and session management
+  - **Job Applications**: Application submission and withdrawal
+  - **Job Roles**: Role management and filtering
+  - **Validation**: Input validation and error handling
+  - **Pagination**: Efficient data pagination
+
 #### Integration Tests
 - **`npm test -- src/__tests__/auth.integration.test.ts --reporter=verbose`**: Run authentication integration tests with verbose output
-- **12 comprehensive tests** covering HTTP status codes for registration and login endpoints
+- **14 comprehensive tests** covering HTTP status codes for registration, login, and complete authentication flows
 
 ### Code Quality (Biome)
 - **`npm run lint`**: Check for linting issues
@@ -201,6 +213,18 @@ cp .env.example .env
 | `SEED_ADMIN_PASSWORD` | Admin password for database seeding | Default dev password | No |
 | `SEED_APPLICANT_PASSWORD` | Applicant password for database seeding | Default dev password | No |
 
+#### Test Environment Configuration
+
+When running tests with `npm run test:run` or `npm test`, the following configurations are automatically applied:
+
+- **NODE_ENV**: Set to `test` by vitest
+- **DATABASE_URL**: Automatically set to `./test-database.sqlite` (separate from production database)
+- **Test Database**: Created automatically with schema on first run via `src/__tests__/setup.ts`
+- **Test Isolation**: Database is cleaned between tests to ensure isolation
+- **Configuration Source**: Tests use `vitest.config.ts` for environment variables, not `.env` file
+
+This ensures that tests never interfere with the development or production databases.
+
 #### Configuration Best Practices
 
 - ✅ **Never commit `.env` files** - They are already in `.gitignore`
@@ -208,6 +232,7 @@ cp .env.example .env
 - ✅ **Provide sensible defaults** - The app works without a `.env` file for local development
 - ✅ **Different configs per environment** - Use different values in dev, test, and production
 - ✅ **Platform-specific in production** - Use Heroku, Vercel, or AWS environment variable tools instead of `.env` files
+- ✅ **Test database isolation** - Tests automatically use a separate test database
 
 #### Debug Endpoint (Development Only)
 

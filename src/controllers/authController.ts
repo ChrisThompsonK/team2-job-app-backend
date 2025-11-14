@@ -3,17 +3,9 @@ import { userRepository } from "../repositories/userRepository";
 import { validatePasswordStrength } from "../utils/password";
 import { loginSchema, registerSchema } from "../utils/validation";
 
-/**
- * Controller for authentication operations
- */
 export class AuthController {
-	/**
-	 * Register a new user account
-	 * POST /api/auth/register
-	 */
 	async register(req: Request, res: Response): Promise<void> {
 		try {
-			// Validate request body
 			const validation = registerSchema.safeParse(req.body);
 			if (!validation.success) {
 				res.status(400).json({
@@ -25,7 +17,6 @@ export class AuthController {
 
 			const { email, password, forename, surname } = validation.data;
 
-			// Check password strength
 			const passwordCheck = validatePasswordStrength(password);
 			if (!passwordCheck.valid) {
 				res.status(400).json({
@@ -35,7 +26,6 @@ export class AuthController {
 				return;
 			}
 
-			// Check if user already exists
 			const existingUser = await userRepository.findByEmail(email);
 			if (existingUser) {
 				res.status(409).json({
@@ -45,7 +35,6 @@ export class AuthController {
 				return;
 			}
 
-			// Create new user
 			const user = await userRepository.createUser({
 				email,
 				password,
@@ -53,7 +42,6 @@ export class AuthController {
 				surname,
 			});
 
-			// Create session
 			req.session.userId = user.userId;
 			req.session.email = user.email;
 			req.session.role = user.role;
@@ -77,13 +65,8 @@ export class AuthController {
 		}
 	}
 
-	/**
-	 * Login with email and password
-	 * POST /api/auth/login
-	 */
 	async login(req: Request, res: Response): Promise<void> {
 		try {
-			// Validate request body
 			const validation = loginSchema.safeParse(req.body);
 			if (!validation.success) {
 				res.status(400).json({
@@ -95,7 +78,6 @@ export class AuthController {
 
 			const { email, password } = validation.data;
 
-			// Verify credentials
 			const user = await userRepository.verifyCredentials(email, password);
 			if (!user) {
 				res.status(401).json({
@@ -105,10 +87,8 @@ export class AuthController {
 				return;
 			}
 
-			// Update last login timestamp
 			await userRepository.updateLastLogin(user.userId);
 
-			// Create session
 			req.session.userId = user.userId;
 			req.session.email = user.email;
 			req.session.role = user.role;
@@ -132,10 +112,6 @@ export class AuthController {
 		}
 	}
 
-	/**
-	 * Logout and destroy session
-	 * POST /api/auth/logout
-	 */
 	async logout(req: Request, res: Response): Promise<void> {
 		try {
 			req.session.destroy((err) => {
@@ -162,11 +138,7 @@ export class AuthController {
 		}
 	}
 
-	/**
-	 * Get currently authenticated user
-	 * GET /api/auth/me
-	 */
-	async getCurrentUser(req: Request, res: Response): Promise<void> {
+	async me(req: Request, res: Response): Promise<void> {
 		try {
 			if (!req.session.userId) {
 				res.status(401).json({
@@ -202,5 +174,4 @@ export class AuthController {
 	}
 }
 
-// Export singleton instance
 export const authController = new AuthController();
