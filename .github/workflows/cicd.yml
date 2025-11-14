@@ -1,0 +1,269 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: ["*"]
+  push:
+    branches: ["*"]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "20"
+  CONTAINER_PORT: "8000"
+  CONTAINER_STARTUP_TIMEOUT: "30"
+
+jobs:
+  # Stage 1: Code Quality Checks
+  code-quality:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Biome check
+        run: npm run check
+
+      - name: Run TypeScript type check
+        run: npm run type-check
+
+  # Stage 2: Testing
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
+          retention-days: 7
+
+  # Stage 3: Build Application
+  build-app:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 7
+
+  # Stage 4: Build Docker Image
+  build-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: build-app
+    outputs:
+      image-tag: ${{ steps.meta.outputs.image-tag }}
+      short-sha: ${{ steps.meta.outputs.short_sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate image metadata
+        id: meta
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          BRANCH_NAME=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
+          
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            IMAGE_TAG="pr-${{ github.event.pull_request.number }}"
+          else
+            IMAGE_TAG="$VERSION"
+          fi
+          
+          # Create tags for local testing
+          TAGS="team2-job-app-backend:${SHORT_SHA}"
+          TAGS="${TAGS},team2-job-app-backend:${BRANCH_NAME}"
+          
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            TAGS="${TAGS},team2-job-app-backend:latest"
+          fi
+          
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Display build information
+        run: |
+          echo "✅ Docker image built successfully!"
+          echo ""
+          echo "Image tags:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' | sed 's/^/  - /'
+          echo ""
+          echo "Git SHA: ${{ github.sha }}"
+          echo "Short SHA: ${{ steps.meta.outputs.short_sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Build time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+
+      - name: Test container startup
+        run: |
+          IMAGE_TAG="team2-job-app-backend:${{ steps.meta.outputs.short_sha }}"
+          echo "Testing image: ${IMAGE_TAG}"
+          
+          docker run -d --name test-container -p ${{ env.CONTAINER_PORT }}:${{ env.CONTAINER_PORT }} ${IMAGE_TAG}
+          
+          echo "Waiting for container to start..."
+          READY=false
+          for i in $(seq 1 ${{ env.CONTAINER_STARTUP_TIMEOUT }}); do
+            if docker ps | grep -q test-container; then
+              if curl -sf http://localhost:${{ env.CONTAINER_PORT }}/ > /dev/null 2>&1; then
+                echo "✅ Container is running and application is responding"
+                READY=true
+                break
+              fi
+            fi
+            sleep 1
+          done
+          
+          if [ "$READY" = false ]; then
+            echo "❌ Container is running but application not responding after ${{ env.CONTAINER_STARTUP_TIMEOUT }} seconds"
+            docker logs test-container
+            exit 1
+          fi
+          
+          if docker ps | grep -q test-container; then
+            echo "✅ Container started successfully"
+            docker logs test-container
+          else
+            echo "❌ Container failed to start or crashed"
+            docker logs test-container
+            exit 1
+          fi
+          
+          docker stop test-container
+          docker rm test-container
+
+  # Stage 5: Deploy to Azure Container Registry (main branch only)
+  deploy-to-acr:
+    name: Push to Azure Container Registry
+    runs-on: ubuntu-latest
+    needs: build-docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and push Docker image to ACR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:${{ needs.build-docker.outputs.image-tag }}
+            ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:latest
+          cache-from: type=registry,ref=${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:buildcache
+          cache-to: type=registry,ref=${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:buildcache,mode=max
+
+      - name: Verify image in ACR
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az acr repository show-tags --name $(echo ${{ secrets.AZURE_ACR_LOGIN_SERVER }} | cut -d'.' -f1) --repository job-app-backend
+
+  # Stage 6: Database Migrations & Seeding (main branch only)
+  database-setup:
+    name: Database Migrations & Seeding
+    runs-on: ubuntu-latest
+    needs: deploy-to-acr
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run database migrations
+        run: npm run db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Seed database
+        run: npm run db:seed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
