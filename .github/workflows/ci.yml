@@ -122,7 +122,9 @@ jobs:
           done
           
           if [ "$READY" = false ]; then
-            echo "⚠️  Container is running but application not responding yet, proceeding with caution..."
+            echo "❌ Container is running but application not responding after 30 seconds. Failing the job."
+            docker logs test-container
+            exit 1
           fi
           
           # Check if container is still running
