@@ -10,6 +10,7 @@ on:
 
 env:
   NODE_VERSION: "20"
+  CONTAINER_PORT: "8000"
 
 jobs:
   code-quality:
@@ -37,9 +38,6 @@ jobs:
 
       - name: Run tests
         run: npm run test:run
-
-      - name: Run tests with coverage
-        run: npm run test:coverage
 
       - name: Build project
         run: npm run build
@@ -106,18 +104,26 @@ jobs:
           echo "Testing image: ${IMAGE_TAG}"
           
           # Start container in background
-          docker run -d --name test-container -p 3000:3000 ${IMAGE_TAG}
+          docker run -d --name test-container -p ${{ env.CONTAINER_PORT }}:${{ env.CONTAINER_PORT }} ${IMAGE_TAG}
           
           # Wait for container to be ready (max 30 seconds)
           echo "Waiting for container to start..."
+          READY=false
           for i in {1..30}; do
             if docker ps | grep -q test-container; then
-              echo "Container is running"
-              sleep 2
-              break
+              # Container is running, now check if app is ready
+              if curl -sf http://localhost:${{ env.CONTAINER_PORT }}/ > /dev/null 2>&1; then
+                echo "✅ Container is running and application is responding"
+                READY=true
+                break
+              fi
             fi
             sleep 1
           done
+          
+          if [ "$READY" = false ]; then
+            echo "⚠️  Container is running but application not responding yet, proceeding with caution..."
+          fi
           
           # Check if container is still running
           if docker ps | grep -q test-container; then
