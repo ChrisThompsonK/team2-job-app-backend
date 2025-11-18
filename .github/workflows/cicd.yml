@@ -12,7 +12,7 @@ env:
   CONTAINER_PORT: "8000"
   CONTAINER_STARTUP_TIMEOUT: "30"
   AZURE_ACR_NAME: "aiacademy25"
-  AZURE_ACR_SERVER: "aiacademy25.azurecr.io"
+  AZURE_ACR_SERVER: "aiacademy25-bbaue6bgenhkd0dj.azurecr.io"
   CONTAINER_IMAGE_NAME: "team2-job-app-backend"
 
 jobs:
