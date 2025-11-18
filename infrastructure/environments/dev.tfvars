@@ -1,6 +1,3 @@
-# Example Terraform Variables File
-# Copy this file to terraform.tfvars and fill in your values
-
 environment              = "dev"
 location                 = "uksouth"
 resource_group_name      = "team2-job-app-backend-rg"
