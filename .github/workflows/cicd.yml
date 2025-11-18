@@ -92,13 +92,6 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Upload build artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: dist/
-          retention-days: 7
 
   # Stage 4: Build Docker Image
   build-docker:
