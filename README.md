@@ -591,8 +591,8 @@ terraform init \
   -backend-config="resource_group_name=terraform-state-mgmt"
 
 # Deploy
-terraform plan -var-file="environments/dev.tfvars"
-terraform apply -var-file="environments/dev.tfvars"
+terraform plan -var-file="infrastructure/dev.tfvars"
+terraform apply -var-file="infrastructure/dev.tfvars"
 ```
 
 📚 **See [infrastructure/README.md](./infrastructure/README.md) for complete details.**
