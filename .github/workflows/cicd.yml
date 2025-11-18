@@ -273,7 +273,7 @@ jobs:
 
       - name: Terraform Plan
         working-directory: ./infrastructure
-        run: terraform plan -var-file="environments/dev.tfvars" -out=tfplan
+        run: terraform plan -var-file="dev.tfvars" -out=tfplan
 
       - name: Terraform Apply (main branch only)
         if: github.ref == 'refs/heads/main'
