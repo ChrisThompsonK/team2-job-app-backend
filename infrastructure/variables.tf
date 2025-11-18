@@ -24,13 +24,11 @@ variable "tags" {
     Environment = string
     Project     = string
     ManagedBy   = string
-    CreatedDate = string
   })
   description = "Common tags to apply to resources"
   default = {
     Environment = "dev"
     Project     = "team2-job-app-backend"
     ManagedBy   = "Terraform"
-    CreatedDate = "2025-11-12"
   }
 }
