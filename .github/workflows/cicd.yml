@@ -214,6 +214,12 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Log in to Azure Container Registry (ACR)
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az acr login --name $(echo ${{ secrets.AZURE_ACR_LOGIN_SERVER }} | cut -d'.' -f1)
       - name: Build and push Docker image to ACR
         uses: docker/build-push-action@v5
         with:
