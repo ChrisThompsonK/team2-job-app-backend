@@ -1,0 +1,17 @@
+# Example Terraform Variables File
+# Copy this file to terraform.tfvars and fill in your values
+
+environment              = "dev"
+location                 = "uksouth"
+resource_group_name      = "team2-job-app-backend-rg"
+storage_account_name     = "team2jobappstg"
+storage_account_tier     = "Standard"
+storage_replication_type = "LRS"
+enable_file_share        = false
+
+tags = {
+  Environment = "dev"
+  Project     = "team2-job-app-backend-rg"
+  ManagedBy   = "Terraform"
+  CreatedDate = "2025-11-12"
+}
