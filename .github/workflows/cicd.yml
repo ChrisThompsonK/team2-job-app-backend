@@ -206,8 +206,14 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Extract ACR name from secret
+        id: acr
+        run: |
+          ACR_NAME=$(echo ${{ secrets.AZURE_ACR_LOGIN_SERVER }} | cut -d'.' -f1)
+          echo "name=$ACR_NAME" >> $GITHUB_OUTPUT
+
       - name: Log in to Azure Container Registry
-        run: az acr login --name aiacademy25
+        run: az acr login --name ${{ steps.acr.outputs.name }}
 
       - name: Build and push Docker image to ACR
         uses: docker/build-push-action@v5
@@ -225,4 +231,4 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az acr repository show-tags --name $(echo ${{ secrets.AZURE_ACR_LOGIN_SERVER }} | cut -d'.' -f1) --repository job-app-backend
+            az acr repository show-tags --name ${{ steps.acr.outputs.name }} --repository job-app-backend
