@@ -582,13 +582,13 @@ The project includes Terraform configuration for managing Azure infrastructure:
 # Run setup script (recommended)
 ./scripts/setup-terraform-backend.sh dev uksouth
 
-# Or manually initialize
+# Or manually initialize (use actual backend values from provider.tf)
 cd infrastructure
 terraform init \
-  -backend-config="storage_account_name=tfstatedev[unique]" \
-  -backend-config="container_name=terraform-state" \
+  -backend-config="storage_account_name=terraform-state-mgmt" \
+  -backend-config="container_name=team2-job-app-backend" \
   -backend-config="key=dev.tfstate" \
-  -backend-config="resource_group_name=rg-tfstate-dev"
+  -backend-config="resource_group_name=terraform-state-mgmt"
 
 # Deploy
 terraform plan -var-file="environments/dev.tfvars"
