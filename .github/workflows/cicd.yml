@@ -11,6 +11,9 @@ env:
   NODE_VERSION: "20"
   CONTAINER_PORT: "8000"
   CONTAINER_STARTUP_TIMEOUT: "30"
+  AZURE_ACR_NAME: "aiacademy25"
+  AZURE_ACR_SERVER: "aiacademy25.azurecr.io"
+  CONTAINER_IMAGE_NAME: "team2-job-app-backend"
 
 jobs:
   # Stage 1: Code Quality Checks
@@ -206,26 +209,23 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Log in to Azure Container Registry (ACR)
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az acr login --name $(echo ${{ secrets.AZURE_ACR_LOGIN_SERVER }} | cut -d'.' -f1)
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ env.AZURE_ACR_NAME }}
+
       - name: Build and push Docker image to ACR
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:${{ needs.build-docker.outputs.image-tag }}
-            ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:latest
-          cache-from: type=registry,ref=${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:buildcache
-          cache-to: type=registry,ref=${{ secrets.AZURE_ACR_LOGIN_SERVER }}/job-app-backend:buildcache,mode=max
+            ${{ env.AZURE_ACR_SERVER }}/${{ env.CONTAINER_IMAGE_NAME }}:${{ needs.build-docker.outputs.image-tag }}
+            ${{ env.AZURE_ACR_SERVER }}/${{ env.CONTAINER_IMAGE_NAME }}:latest
+          cache-from: type=registry,ref=${{ env.AZURE_ACR_SERVER }}/${{ env.CONTAINER_IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.AZURE_ACR_SERVER }}/${{ env.CONTAINER_IMAGE_NAME }}:buildcache,mode=max
 
       - name: Verify image in ACR
         uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
-            az acr repository show-tags --name $(echo ${{ secrets.AZURE_ACR_LOGIN_SERVER }} | cut -d'.' -f1) --repository job-app-backend
+            az acr repository show-tags --name ${{ env.AZURE_ACR_NAME }} --repository ${{ env.CONTAINER_IMAGE_NAME }}
