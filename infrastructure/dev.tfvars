@@ -1,6 +1,6 @@
 environment         = "dev"
 location            = "uksouth"
-resource_group_name = "aiacademy25-dev"
+resource_group_name = "team2-job-app-backend-dev-rg"
 
 tags = {
   Environment = "dev"
