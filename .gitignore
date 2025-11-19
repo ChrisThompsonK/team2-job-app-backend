@@ -173,3 +173,11 @@ drizzle-docker.config.ts
 # Planning and specification documents (work in progress)
 src/spec/
 .env.docker
+
+# Terraform state files (sensitive data - should never be committed)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraformrc
+terraform.rc
+*.tfplan

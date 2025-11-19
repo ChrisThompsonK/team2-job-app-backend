@@ -409,6 +409,14 @@ curl -X PUT http://localhost:3000/api/job-roles/1 \
 - **Docker**: Container platform for consistent deployments
 - **Docker Compose**: Multi-container orchestration
 
+### Infrastructure & DevOps
+- **Terraform**: Infrastructure as Code for Azure resources (>= 1.13)
+- **Azure**: Cloud platform for hosting infrastructure
+- **GitHub Actions**: CI/CD pipeline with Terraform deployment automation
+- **Azure Container Registry**: Docker image storage and management
+- **Azure Storage**: Remote Terraform state backend and application file storage
+- **Service Principal**: Secure Azure authentication for pipelines
+
 ### API Features
 - **RESTful Design**: Clean, intuitive API endpoints
 - **JSON API**: Standard JSON request/response format
@@ -563,7 +571,51 @@ curl -X DELETE http://localhost:3000/api/applications/42 \
 
 📖 **Complete API Documentation**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for detailed endpoint documentation with examples.
 
-## �📝 Configuration
+## 🏗️ Infrastructure & DevOps
+
+### Infrastructure as Code (Terraform)
+
+The project includes Terraform configuration for managing Azure infrastructure:
+
+**Setup:**
+```bash
+# Run setup script (recommended)
+./scripts/setup-terraform-backend.sh dev uksouth
+
+# Or manually initialize (use actual backend values from provider.tf)
+cd infrastructure
+terraform init \
+  -backend-config="storage_account_name=terraform-state-mgmt" \
+  -backend-config="container_name=team2-job-app-backend" \
+  -backend-config="key=dev.tfstate" \
+  -backend-config="resource_group_name=terraform-state-mgmt"
+
+# Deploy
+terraform plan -var-file="infrastructure/dev.tfvars"
+terraform apply -var-file="infrastructure/dev.tfvars"
+```
+
+📚 **See [infrastructure/README.md](./infrastructure/README.md) for complete details.**
+
+### CI/CD Pipeline
+
+Automated pipeline (`.github/workflows/cicd.yml`):
+- **Code Quality**: Biome, TypeScript checks
+- **Testing**: Unit and integration tests
+- **Docker**: Build and push to Azure Container Registry (main only)
+- **Terraform**: Plan on all branches, apply on main
+
+**Required Secrets:**
+- `AZURE_CREDENTIALS` - Service principal JSON
+- `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
+- `TERRAFORM_STORAGE_ACCOUNT_NAME`, `TERRAFORM_RESOURCE_GROUP`
+
+Create service principal:
+```bash
+az ad sp create-for-rbac --name "team2-job-app-ci-cd" --role "Contributor" --scopes "/subscriptions/{SUBSCRIPTION_ID}"
+```
+
+## 📝 Configuration
 
 The project uses modern TypeScript configuration with:
 - ES2022 target and lib
