@@ -3,12 +3,11 @@ resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
 
-  tags = merge(
-    var.tags,
-    {
-      Environment = var.environment
-    }
-  )
+   tags = {
+    Environment = var.environment
+    Application = var.app_name
+    ManagedBy   = "Terraform"
+  }
 
 }
 # User-Assigned Managed Identity for Container App
