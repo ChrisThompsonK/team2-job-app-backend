@@ -8,8 +8,8 @@ resource "azurerm_resource_group" "main" {
     {
       Environment = var.environment
     }
-  )\
-  
+  )
+
 }
 # User-Assigned Managed Identity for Container App
 resource "azurerm_user_assigned_identity" "container_identity" {
