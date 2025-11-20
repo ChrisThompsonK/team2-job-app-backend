@@ -100,7 +100,7 @@ resource "azurerm_container_app" "backend" {
 
   secret {
     name                = "database-url"
-    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/database-url/"
+    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/database-url"
     identity            = azurerm_user_assigned_identity.container_identity.id
   }
 
