@@ -57,7 +57,7 @@ resource "azurerm_role_assignment" "kv_secrets_user" {
 # Container App for Backend
 resource "azurerm_container_app" "backend" {
   name                         = "${var.app_name}-app"
-  container_app_environment_id = data.azurerm_container_app_environment.platform_env.id
+  container_app_environment_id = data.azurerm_container_app_environment.main.id
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
 
