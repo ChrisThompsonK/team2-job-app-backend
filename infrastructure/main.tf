@@ -3,16 +3,16 @@ resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
 
-   tags = {
+  tags = {
     Environment = var.environment
     Application = var.app_name
     ManagedBy   = "Terraform"
   }
-
 }
+
 # User-Assigned Managed Identity for Container App
 resource "azurerm_user_assigned_identity" "container_identity" {
-  name                = var.app_name
+  name                = "${var.app_name}-identity"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
  
