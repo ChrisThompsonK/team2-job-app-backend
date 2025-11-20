@@ -87,3 +87,9 @@ variable "app_name" {
   type        = string
   default     = "team2-job-app-backend"
 }
+
+variable "better_auth_url" {
+  description = "Better Auth URL for authentication"
+  type        = string
+  default     = ""
+}

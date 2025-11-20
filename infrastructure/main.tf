@@ -80,7 +80,7 @@ resource "azurerm_container_app" "backend" {
 
       env {
         name  = "NODE_ENV"
-        value = "production"
+        value = var.environment == "prod" ? "production" : var.environment
       }
 
       env {
@@ -115,19 +115,19 @@ resource "azurerm_container_app" "backend" {
 
   secret {
     name                = "better-auth-secret"
-    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/better-auth-secret"
+    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/better-auth-secret/"
     identity            = azurerm_user_assigned_identity.container_identity.id
   }
 
   secret {
     name                = "database-url"
-    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/database-url"
+    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/database-url/"
     identity            = azurerm_user_assigned_identity.container_identity.id
   }
 
   secret {
     name                = "gemini-api-key"
-    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/gemini-api-key"
+    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/gemini-api-key/"
     identity            = azurerm_user_assigned_identity.container_identity.id
   }
 
