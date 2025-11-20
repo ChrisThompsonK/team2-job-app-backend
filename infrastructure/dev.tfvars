@@ -16,7 +16,7 @@ container_app_environment_name                = "team2-job-app-container-app-env
 container_app_environment_resource_group_name = "team2-job-app-shared-rg"
 
 # Container App Configuration
-container_image_tag = "latest"
+container_image_tag = "1.0.0"
 container_cpu       = "0.5"
 container_memory    = "1Gi"
 container_port      = 8000
