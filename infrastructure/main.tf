@@ -89,23 +89,8 @@ resource "azurerm_container_app" "backend" {
       }
 
       env {
-        name  = "BETTER_AUTH_URL"
-        value = var.better_auth_url
-      }
-
-      env {
-        name        = "BETTER_AUTH_SECRET"
-        secret_name = "better-auth-secret"
-      }
-
-      env {
         name        = "DATABASE_URL"
         secret_name = "database-url"
-      }
-
-      env {
-        name        = "GEMINI_API_KEY"
-        secret_name = "gemini-api-key"
       }
     }
 
@@ -114,20 +99,8 @@ resource "azurerm_container_app" "backend" {
   }
 
   secret {
-    name                = "better-auth-secret"
-    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/better-auth-secret/"
-    identity            = azurerm_user_assigned_identity.container_identity.id
-  }
-
-  secret {
     name                = "database-url"
     key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/database-url/"
-    identity            = azurerm_user_assigned_identity.container_identity.id
-  }
-
-  secret {
-    name                = "gemini-api-key"
-    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/gemini-api-key/"
     identity            = azurerm_user_assigned_identity.container_identity.id
   }
 
