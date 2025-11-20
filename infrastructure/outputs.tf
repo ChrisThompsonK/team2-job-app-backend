@@ -40,3 +40,28 @@ output "role_assignments" {
   }
   description = "IDs of the role assignments created"
 }
+
+output "container_app_name" {
+  value       = azurerm_container_app.backend.name
+  description = "Name of the Container App"
+}
+
+output "container_app_fqdn" {
+  value       = azurerm_container_app.backend.ingress[0].fqdn
+  description = "Fully Qualified Domain Name (FQDN) of the Container App (internal only)"
+}
+
+output "container_app_url" {
+  value       = "http://${azurerm_container_app.backend.ingress[0].fqdn}"
+  description = "Full URL to access the Container App (internal only, use http)"
+}
+
+output "container_app_id" {
+  value       = azurerm_container_app.backend.id
+  description = "Resource ID of the Container App"
+}
+
+output "container_app_latest_revision_name" {
+  value       = azurerm_container_app.backend.latest_revision_name
+  description = "Name of the latest revision"
+}
