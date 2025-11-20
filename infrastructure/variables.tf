@@ -78,7 +78,7 @@ variable "container_memory" {
 variable "container_port" {
   description = "Port the container listens on"
   type        = number
-  default     = 3001
+  default     = 8000
 }
 
 # Application Configuration
