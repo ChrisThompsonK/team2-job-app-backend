@@ -92,6 +92,11 @@ resource "azurerm_container_app" "backend" {
         name        = "DATABASE_URL"
         secret_name = "database-url"
       }
+
+      env {
+        name        = "SEED_ADMIN_PASSWORD"
+        secret_name = "admin-password"
+      }
     }
 
     min_replicas = 1
@@ -101,6 +106,12 @@ resource "azurerm_container_app" "backend" {
   secret {
     name                = "database-url"
     key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/database-url"
+    identity            = azurerm_user_assigned_identity.container_identity.id
+  }
+
+  secret {
+    name                = "admin-password"
+    key_vault_secret_id = "${data.azurerm_key_vault.kv.vault_uri}secrets/admin-pass"
     identity            = azurerm_user_assigned_identity.container_identity.id
   }
 
