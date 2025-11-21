@@ -1,4 +1,3 @@
---> statement-breakpoint
 CREATE TABLE `job_roles` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`job_role_name` text NOT NULL,
