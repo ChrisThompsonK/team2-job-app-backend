@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS `auth_users` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS `auth_users_email_unique` ON `auth_users` (`email`);
 --> statement-breakpoint
-
--- Add job_applications table
 CREATE TABLE IF NOT EXISTS `job_applications` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`job_role_id` integer NOT NULL,

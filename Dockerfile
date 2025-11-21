@@ -14,6 +14,10 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
 # Copy dependencies from builder
 COPY --from=builder /app/node_modules ./node_modules
 
@@ -22,12 +26,11 @@ COPY package*.json tsconfig.json drizzle.config.ts ./
 COPY drizzle/ ./drizzle/
 COPY src/ ./src/
 
-# Create non-root user and set permissions
+# Create data directory and set ownership AFTER copying files
 RUN mkdir -p /app/data && \
-    addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 && \
     chown -R nodejs:nodejs /app
 
+# Switch to non-root user
 USER nodejs
 
 # Expose application port
@@ -37,5 +40,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8000/ || exit 1
 
-# Run migrations before starting the app
-CMD npx drizzle-kit push && npx tsx src/index.ts
+CMD npm run db:migrate && npm run db:seed && npx tsx src/index.ts
