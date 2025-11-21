@@ -37,4 +37,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8000/ || exit 1
 
-CMD npx tsx src/index.ts
+# Run migrations before starting the app
+CMD npx drizzle-kit push && npx tsx src/index.ts
